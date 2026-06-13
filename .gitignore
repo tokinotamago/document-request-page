@@ -1,0 +1,34 @@
+# 環境変数ファイル（APIキー・シークレットを含むファイル）
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+
+# Supabase サービスロールキー等のシークレットファイル
+secrets.json
+config.secret.*
+
+# OS・エディタの生成ファイル
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# JetBrains IDE
+.idea/
+
+# ログファイル
+*.log
+npm-debug.log*
+
+# 依存パッケージ（将来 Node.js を導入した場合）
+node_modules/
+
+# ビルド成果物（将来ビルドツールを導入した場合）
+dist/
+build/
+.cache/

@@ -1,0 +1,618 @@
+/* ============================================================
+   Variables
+   ============================================================ */
+:root {
+  --c-black:       #111111;
+  --c-accent:      #002244;
+  --c-text:        #222222;
+  --c-text-sub:    #555555;
+  --c-text-muted:  #888888;
+  --c-border:      #d8d8d8;
+  --c-border-dark: #999999;
+  --c-bg:          #ffffff;
+  --c-surface:     #ffffff;
+  --c-input-bg:    #ffffff;
+  --c-input-hover: #f9f9f9;
+  --c-error:       #c0392b;
+  --c-required:    #d32f2f;
+  --c-divider:     #e8e8e8;
+
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.06);
+  --shadow-md: 0 2px 10px rgba(0,0,0,0.08);
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  --font: "Noto Sans JP", -apple-system, BlinkMacSystemFont, "Segoe UI", "Yu Gothic UI", "Yu Gothic",
+          "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+
+  --max-w: 680px;
+  --tr: 0.15s ease;
+}
+
+/* ============================================================
+   Reset & Base
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font);
+  background: var(--c-bg);
+  color: var(--c-text);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   Hero
+   ============================================================ */
+.site-hero {
+  position: relative;
+  min-height: 277px;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  background:
+    /* テキスト可読性オーバーレイ — 下部を濃くして文字を読みやすく */
+    linear-gradient(to top, rgba(0,8,20,0.72) 0%, rgba(0,8,20,0.28) 45%, rgba(0,8,20,0.05) 100%),
+    /* ブランドカラー（#002244）薄掛け */
+    linear-gradient(158deg, rgba(0,34,68,0.25) 0%, rgba(0,34,68,0.08) 100%),
+    /* 展示会写真 — 顔が映り込むよう上寄りに配置 */
+    url('document-request-page-top.png') center 20% / cover no-repeat;
+}
+
+/* 展示会場の格子天井・床を表現するグリッドオーバーレイ */
+.site-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: calc(var(--max-w) + 48px); /* 680 + 24*2 = 728px — container の左端に揃える */
+  margin: 0 auto;
+  padding: 16px 24px;
+}
+
+.hero-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  color: rgba(255,255,255,0.40);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+.hero-title {
+  font-size: clamp(18px, 2.5vw, 22px);
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 10px;
+}
+
+.hero-desc {
+  font-size: 13.5px;
+  color: rgba(255,255,255,0.58);
+  line-height: 1.85;
+}
+
+/* ============================================================
+   Main / Container
+   ============================================================ */
+.main-content { padding: 44px 24px 100px; }
+.container { max-width: var(--max-w); margin: 0 auto; }
+
+/* ============================================================
+   Page title  (ヒーロー直下の見出し)
+   ============================================================ */
+.page-title {
+  font-size: clamp(20px, 3vw, 26px);
+  font-weight: 800;
+  color: var(--c-black);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 20px;
+}
+
+/* ============================================================
+   Form lead  (※マーク説明)
+   ============================================================ */
+.form-lead {
+  font-size: 13px;
+  color: var(--c-text-sub);
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ============================================================
+   Required mark  ※ (赤)
+   ============================================================ */
+.required-mark {
+  color: var(--c-required);
+  font-weight: 700;
+  font-size: 14px;
+  margin-left: 4px;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+/* ============================================================
+   Form Sections  （カードなし・フラット）
+   ============================================================ */
+.form-section {
+  background: transparent;
+  padding: 32px 0 28px;
+}
+
+.form-section + .form-section {
+  border-top: 1px solid var(--c-divider);
+}
+
+/* ============================================================
+   Form Groups
+   ============================================================ */
+.form-group { margin-bottom: 24px; }
+.form-group:last-child { margin-bottom: 0; }
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c-text);
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   Split row  (姓/名, せい/めい)
+   ============================================================ */
+.input-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.input-row__item {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================================
+   Inputs / Textarea
+   ============================================================ */
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: var(--font);
+  color: var(--c-text);
+  background: var(--c-input-bg);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--tr), background var(--tr), box-shadow var(--tr);
+  outline: none;
+  appearance: none;
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder { color: #c0c0c0; }
+
+.form-input:hover,
+.form-textarea:hover {
+  border-color: var(--c-border-dark);
+  background: var(--c-input-hover);
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  border-color: var(--c-accent);
+  background: var(--c-surface);
+  box-shadow: 0 0 0 2px rgba(0,34,68,0.08);
+}
+
+.form-input[readonly] {
+  background: #f2f2f2;
+  color: var(--c-text-sub);
+  cursor: default;
+  border-color: #e0e0e0;
+}
+
+.form-input.is-error,
+.form-textarea.is-error {
+  border-color: var(--c-error);
+  background: #fff8f8;
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 96px;
+  line-height: 1.65;
+}
+
+/* ============================================================
+   Address
+   ============================================================ */
+.address-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.address-sub-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.address-sub-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+  display: flex;
+  align-items: center;
+}
+
+.postal-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.postal-row .form-input {
+  max-width: 180px;
+  flex-shrink: 0;
+}
+
+.postal-hint {
+  font-size: 11.5px;
+  color: var(--c-text-muted);
+  white-space: nowrap;
+}
+
+/* ============================================================
+   Checkbox group  (出展会期 / エリア)
+   ============================================================ */
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  padding: 3px 0;
+}
+
+.check-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.check-custom {
+  flex-shrink: 0;
+  width: 17px;
+  height: 17px;
+  border: 1.5px solid var(--c-border-dark);
+  border-radius: 3px;
+  background: var(--c-input-bg);
+  transition: border-color var(--tr), background var(--tr);
+  margin-top: 3px;
+  position: relative;
+}
+
+.check-item:hover .check-custom { border-color: var(--c-accent); }
+
+.check-input:checked + .check-custom {
+  background: var(--c-accent);
+  border-color: var(--c-accent);
+}
+
+.check-input:checked + .check-custom::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  width: 5px;
+  height: 9px;
+  border: 2px solid #fff;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+
+.check-text {
+  font-size: 14px;
+  color: var(--c-text);
+  line-height: 1.55;
+}
+
+/* ============================================================
+   Privacy section
+   ============================================================ */
+.privacy-section {
+  border-top: 1px solid var(--c-divider);
+  padding: 28px 0 4px;
+  margin-bottom: 12px;
+}
+
+.privacy-text {
+  font-size: 13px;
+  color: var(--c-text-sub);
+  line-height: 1.75;
+}
+
+/* ============================================================
+   Error messages
+   ============================================================ */
+.error-message {
+  display: block;
+  font-size: 11.5px;
+  color: var(--c-error);
+  margin-top: 4px;
+  min-height: 16px;
+  line-height: 1.4;
+}
+
+/* ============================================================
+   Links
+   ============================================================ */
+.text-link {
+  color: var(--c-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ============================================================
+   Submit button
+   ============================================================ */
+.form-submit {
+  text-align: center;
+  padding: 20px 0 0;
+}
+
+.btn-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px 52px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: var(--font);
+  color: #ffffff;
+  background: var(--c-accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  transition: background var(--tr), transform var(--tr);
+}
+
+.btn-submit:hover {
+  background: #003470;
+  transform: translateY(-1px);
+}
+
+.btn-submit:active { transform: translateY(0); }
+
+.btn-submit:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-submit__arrow { transition: transform var(--tr); }
+.btn-submit:hover .btn-submit__arrow { transform: translateX(3px); }
+
+/* ============================================================
+   Confirmation page
+   ============================================================ */
+.confirmation-page {
+  padding-top: 8px;
+}
+
+.confirmation-page[hidden] { display: none; }
+
+.confirmation-header {
+  margin-bottom: 28px;
+}
+
+.confirmation-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--c-black);
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+}
+
+.confirmation-desc {
+  font-size: 13.5px;
+  color: var(--c-text-sub);
+  line-height: 1.75;
+}
+
+/* 確認ブロック（カードなし・フラット） */
+.confirm-block {
+  background: transparent;
+  padding: 24px 0;
+}
+
+.confirm-block + .confirm-block {
+  border-top: 1px solid var(--c-divider);
+}
+
+.confirm-block-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--c-black);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+  border-bottom: 2px solid var(--c-black);
+}
+
+.confirm-list { display: block; }
+
+.confirm-row {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.confirm-row:last-child { border-bottom: none; }
+
+.confirm-row dt {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+  padding-top: 1px;
+}
+
+.confirm-row dd {
+  font-size: 14px;
+  color: var(--c-text);
+  line-height: 1.65;
+  word-break: break-all;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  align-items: center;
+  padding: 32px 0 0;
+  border-top: 1px solid var(--c-divider);
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--c-text-sub);
+  background: transparent;
+  border: 1.5px solid var(--c-border-dark);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--tr), color var(--tr), border-color var(--tr);
+  font-family: var(--font);
+  letter-spacing: 0.02em;
+}
+
+.btn-back:hover {
+  background: #f0f0f0;
+  color: var(--c-text);
+  border-color: var(--c-black);
+}
+
+/* ============================================================
+   Result messages
+   ============================================================ */
+.result-message {
+  text-align: center;
+  padding: 64px 32px;
+  background: var(--c-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid #e6e6e6;
+}
+
+.result-message[hidden] { display: none; }
+
+.result-icon {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.result-icon--success { background: #e8f5e9; color: #2e7d32; }
+.result-icon--error   { background: #fce4ec; color: var(--c-error); }
+
+.result-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--c-black);
+  margin-bottom: 12px;
+}
+
+.result-desc {
+  font-size: 14px;
+  color: var(--c-text-sub);
+  line-height: 1.8;
+}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+.site-footer {
+  background: var(--c-black);
+  padding: 28px 24px;
+  text-align: center;
+}
+
+.footer-text {
+  font-size: 12px;
+  color: #555555;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 600px) {
+  .site-hero  { min-height: 208px; }
+  .hero-inner { padding: 14px 20px 24px; }
+
+  .main-content { padding: 32px 20px 80px; }
+
+  .form-section { padding: 24px 0 20px; }
+
+  .input-row { grid-template-columns: 1fr; gap: 8px; }
+
+  .postal-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .postal-row .form-input { max-width: 100%; }
+
+  .confirm-row {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+
+  .confirm-actions {
+    flex-direction: column-reverse;
+    gap: 12px;
+  }
+  .btn-back,
+  .btn-submit { width: 100%; justify-content: center; }
+}

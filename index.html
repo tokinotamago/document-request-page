@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>出展資料請求 | 健康博覧会</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ========== HERO ========== -->
+  <section class="site-hero"></section>
+
+  <!-- ========== MAIN ========== -->
+  <main class="main-content">
+    <div class="container">
+
+      <h1 class="page-title">出展資料請求</h1>
+
+      <!-- ===== フォームラッパー ===== -->
+      <div id="formWrapper">
+        <p class="form-lead"><span class="required-mark">※</span>マークは必須入力項目です。</p>
+
+        <form id="documentRequestForm" class="request-form" method="POST" action="#" novalidate data-form="document-request">
+
+          <input type="hidden" id="formSource"  name="source"       value="exhibition_2025">
+          <input type="hidden" id="submittedAt" name="submitted_at" value="">
+
+          <!-- ===== SECTION: 貴社・担当者情報 ===== -->
+          <section class="form-section" id="section-company">
+
+            <div class="form-group" id="group-companyName">
+              <label class="form-label" for="companyName">
+                貴社名<span class="required-mark">※</span>
+              </label>
+              <input type="text" id="companyName" name="company_name" class="form-input"
+                     placeholder="社名" autocomplete="organization" required data-field="company_name">
+              <span class="error-message" id="error-companyName" role="alert"></span>
+            </div>
+
+            <div class="form-group" id="group-name">
+              <label class="form-label">
+                ご担当者<span class="required-mark">※</span>
+              </label>
+              <div class="input-row">
+                <div class="input-row__item">
+                  <input type="text" id="lastName" name="last_name" class="form-input"
+                         placeholder="姓" autocomplete="family-name" required data-field="last_name">
+                  <span class="error-message" id="error-lastName" role="alert"></span>
+                </div>
+                <div class="input-row__item">
+                  <input type="text" id="firstName" name="first_name" class="form-input"
+                         placeholder="名" autocomplete="given-name" required data-field="first_name">
+                  <span class="error-message" id="error-firstName" role="alert"></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group" id="group-nameKana">
+              <label class="form-label">
+                ふりがな<span class="required-mark">※</span>
+              </label>
+              <div class="input-row">
+                <div class="input-row__item">
+                  <input type="text" id="lastNameKana" name="last_name_kana" class="form-input"
+                         placeholder="せい" required data-field="last_name_kana">
+                  <span class="error-message" id="error-lastNameKana" role="alert"></span>
+                </div>
+                <div class="input-row__item">
+                  <input type="text" id="firstNameKana" name="first_name_kana" class="form-input"
+                         placeholder="めい" required data-field="first_name_kana">
+                  <span class="error-message" id="error-firstNameKana" role="alert"></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group" id="group-department">
+              <label class="form-label" for="department">
+                部署<span class="required-mark">※</span>
+              </label>
+              <input type="text" id="department" name="department" class="form-input"
+                     placeholder="部署" autocomplete="organization-title" required data-field="department">
+              <span class="error-message" id="error-department" role="alert"></span>
+            </div>
+
+            <div class="form-group" id="group-jobTitle">
+              <label class="form-label" for="jobTitle">
+                役職<span class="required-mark">※</span>
+              </label>
+              <input type="text" id="jobTitle" name="job_title" class="form-input"
+                     placeholder="役職" required data-field="job_title">
+              <span class="error-message" id="error-jobTitle" role="alert"></span>
+            </div>
+
+          </section>
+
+          <!-- ===== SECTION: 連絡先情報 ===== -->
+          <section class="form-section" id="section-contact">
+
+            <div class="form-group" id="group-email">
+              <label class="form-label" for="email">
+                メールアドレス<span class="required-mark">※</span>
+              </label>
+              <input type="email" id="email" name="email" class="form-input"
+                     placeholder="メールアドレス" autocomplete="email" required data-field="email">
+              <span class="error-message" id="error-email" role="alert"></span>
+            </div>
+
+            <div class="form-group" id="group-emailConfirm">
+              <label class="form-label" for="emailConfirm">
+                メールアドレス（確認用）<span class="required-mark">※</span>
+              </label>
+              <input type="email" id="emailConfirm" name="email_confirm" class="form-input"
+                     placeholder="メールアドレス（確認用）" autocomplete="off" required data-field="email_confirm">
+              <span class="error-message" id="error-emailConfirm" role="alert"></span>
+            </div>
+
+            <div class="form-group" id="group-phone">
+              <label class="form-label" for="phone">
+                連絡先電話番号<span class="required-mark">※</span>
+              </label>
+              <input type="tel" id="phone" name="phone" class="form-input"
+                     placeholder="連絡先電話番号" autocomplete="tel" required data-field="phone">
+              <span class="error-message" id="error-phone" role="alert"></span>
+            </div>
+
+            <!-- 住所 -->
+            <div class="form-group" id="group-address">
+              <label class="form-label">
+                住所<span class="required-mark">※</span>
+              </label>
+              <div class="address-fields">
+
+                <div class="address-sub-field">
+                  <span class="address-sub-label">郵便番号</span>
+                  <div class="postal-row">
+                    <input type="text" id="postalCode" name="postal_code" class="form-input"
+                           placeholder="郵便番号" maxlength="8" autocomplete="postal-code"
+                           required data-field="postal_code">
+                    <span class="postal-hint">ハイフンあり・なしどちらでも可（7桁）</span>
+                  </div>
+                  <span class="error-message" id="error-postalCode" role="alert"></span>
+                </div>
+
+                <div class="address-sub-field">
+                  <span class="address-sub-label">都道府県</span>
+                  <input type="text" id="prefecture" name="prefecture" class="form-input"
+                         placeholder="都道府県" autocomplete="address-level1"
+                         required data-field="prefecture" readonly>
+                </div>
+
+                <div class="address-sub-field">
+                  <span class="address-sub-label">市区町村・番地</span>
+                  <input type="text" id="address1" name="address1" class="form-input"
+                         placeholder="市区町村・番地" autocomplete="address-level2"
+                         required data-field="address1">
+                  <span class="error-message" id="error-address1" role="alert"></span>
+                </div>
+
+                <div class="address-sub-field">
+                  <span class="address-sub-label">ビル名ほか</span>
+                  <input type="text" id="address2" name="address2" class="form-input"
+                         placeholder="ビル名ほか" autocomplete="address-line3" data-field="address2">
+                </div>
+
+              </div>
+            </div>
+
+            <div class="form-group" id="group-website">
+              <label class="form-label" for="website">WEBサイト</label>
+              <input type="url" id="website" name="website" class="form-input"
+                     placeholder="WEBサイト" autocomplete="url" data-field="website">
+            </div>
+
+          </section>
+
+          <!-- ===== SECTION: 出展について ===== -->
+          <section class="form-section" id="section-exhibit">
+
+            <div class="form-group" id="group-exhibitProducts">
+              <label class="form-label" for="exhibitProducts">
+                出展予定製品<span class="required-mark">※</span>
+              </label>
+              <input type="text" id="exhibitProducts" name="exhibit_products" class="form-input"
+                     placeholder="健康食品、健康機器、健康アプリなど" required data-field="exhibit_products">
+              <span class="error-message" id="error-exhibitProducts" role="alert"></span>
+            </div>
+
+            <div class="form-group" id="group-exhibitPeriods">
+              <label class="form-label">
+                出展を検討する会期<span class="required-mark">※</span>
+              </label>
+              <div class="checkbox-group" id="exhibitPeriodGroup"
+                   role="group" aria-label="出展を検討する会期">
+                <label class="check-item" for="period-2026-autumn">
+                  <input type="checkbox" id="period-2026-autumn" name="exhibit_periods"
+                         value="2026_autumn" class="check-input" data-field="exhibit_periods">
+                  <span class="check-custom" aria-hidden="true"></span>
+                  <span class="check-text">健康博覧会2026・秋　9月30日（水）〜10月2日（金）</span>
+                </label>
+                <label class="check-item" for="period-2027-spring">
+                  <input type="checkbox" id="period-2027-spring" name="exhibit_periods"
+                         value="2027_spring" class="check-input" data-field="exhibit_periods">
+                  <span class="check-custom" aria-hidden="true"></span>
+                  <span class="check-text">健康博覧会2027・春　3月17日（水）〜19日（金）</span>
+                </label>
+                <label class="check-item" for="period-undecided">
+                  <input type="checkbox" id="period-undecided" name="exhibit_periods"
+                         value="undecided" class="check-input" data-field="exhibit_periods">
+                  <span class="check-custom" aria-hidden="true"></span>
+                  <span class="check-text">未定</span>
+                </label>
+              </div>
+              <span class="error-message" id="error-exhibitPeriods" role="alert"></span>
+            </div>
+
+            <div class="form-group" id="group-exhibitAreas">
+              <label class="form-label">
+                出展を希望するエリア<span class="required-mark">※</span>
+              </label>
+              <div class="checkbox-group" id="exhibitAreaGroup"
+                   role="group" aria-label="出展を希望するエリア">
+                <label class="check-item" for="area-food-supplement">
+                  <input type="checkbox" id="area-food-supplement" name="exhibit_areas"
+                         value="food_supplement" class="check-input" data-field="exhibit_areas">
+                  <span class="check-custom" aria-hidden="true"></span>
+                  <span class="check-text">健康食品＆サプリメントEXPO</span>
+                </label>
+                <label class="check-item" for="area-organic-natural">
+                  <input type="checkbox" id="area-organic-natural" name="exhibit_areas"
+                         value="organic_natural" class="check-input" data-field="exhibit_areas">
+                  <span class="check-custom" aria-hidden="true"></span>
+                  <span class="check-text">オーガニック＆ナチュラルEXPO</span>
+                </label>
+                <label class="check-item" for="area-beauty-wellness">
+                  <input type="checkbox" id="area-beauty-wellness" name="exhibit_areas"
+                         value="beauty_wellness" class="check-input" data-field="exhibit_areas">
+                  <span class="check-custom" aria-hidden="true"></span>
+                  <span class="check-text">ビューティー＆ウェルネスEXPO</span>
+                </label>
+                <label class="check-item" for="area-body-mind">
+                  <input type="checkbox" id="area-body-mind" name="exhibit_areas"
+                         value="body_mind_recovery" class="check-input" data-field="exhibit_areas">
+                  <span class="check-custom" aria-hidden="true"></span>
+                  <span class="check-text">ボディ＆マインドリカバリーEXPO</span>
+                </label>
+                <label class="check-item" for="area-factory">
+                  <input type="checkbox" id="area-factory" name="exhibit_areas"
+                         value="health_beauty_factory" class="check-input" data-field="exhibit_areas">
+                  <span class="check-custom" aria-hidden="true"></span>
+                  <span class="check-text">健康＆美容ファクトリーEXPO</span>
+                </label>
+                <label class="check-item" for="area-age-tech">
+                  <input type="checkbox" id="area-age-tech" name="exhibit_areas"
+                         value="age_tech_lab" class="check-input" data-field="exhibit_areas">
+                  <span class="check-custom" aria-hidden="true"></span>
+                  <span class="check-text">【特別企画】AGE-TECH Lab. 2026（エイジテック・ラボ）</span>
+                </label>
+                <label class="check-item" for="area-undecided">
+                  <input type="checkbox" id="area-undecided" name="exhibit_areas"
+                         value="undecided" class="check-input" data-field="exhibit_areas">
+                  <span class="check-custom" aria-hidden="true"></span>
+                  <span class="check-text">未定</span>
+                </label>
+              </div>
+              <span class="error-message" id="error-exhibitAreas" role="alert"></span>
+            </div>
+
+            <div class="form-group" id="group-startupCheck">
+              <label class="form-label">該当する方はチェックしてください</label>
+              <div class="checkbox-group">
+                <label class="check-item" for="startupCheck">
+                  <input type="checkbox" id="startupCheck" name="startup_check"
+                         value="startup" class="check-input" data-field="startup_check">
+                  <span class="check-custom" aria-hidden="true"></span>
+                  <span class="check-text">創業５年以内</span>
+                </label>
+              </div>
+            </div>
+
+          </section>
+
+          <!-- ===== SECTION: その他 ===== -->
+          <section class="form-section" id="section-other">
+
+            <div class="form-group" id="group-targetIndustry">
+              <label class="form-label" for="targetIndustry">出会いたい業種</label>
+              <input type="text" id="targetIndustry" name="target_industry" class="form-input"
+                     placeholder="出会いたい業種" data-field="target_industry">
+            </div>
+
+            <div class="form-group" id="group-otherShows">
+              <label class="form-label" for="otherShows">本展以外の出展検討中の展示会</label>
+              <input type="text" id="otherShows" name="other_shows" class="form-input"
+                     placeholder="本展以外の出展検討中の展示会" data-field="other_shows">
+            </div>
+
+            <div class="form-group" id="group-onlineMeeting">
+              <label class="form-label" for="onlineMeeting">
+                オンライン商談を希望される方は、希望日時を入力してください。
+              </label>
+              <textarea id="onlineMeeting" name="online_meeting" class="form-textarea" rows="3"
+                        placeholder="オンライン商談を希望される方は、希望日時を入力してください。"
+                        data-field="online_meeting"></textarea>
+            </div>
+
+            <div class="form-group" id="group-otherNotes">
+              <label class="form-label" for="otherNotes">その他</label>
+              <textarea id="otherNotes" name="other_notes" class="form-textarea" rows="4"
+                        placeholder="出展に関する質問事項などがございましたら、こちらにご記入ください"
+                        data-field="other_notes"></textarea>
+            </div>
+
+          </section>
+
+          <!-- ===== 個人情報取得に関する文言（チェックボックスなし） ===== -->
+          <div class="privacy-section" id="section-privacy">
+            <p class="privacy-text">
+              貴殿の個人情報は弊社のプライバシーポリシーに基づき、Informaグループが主催する各種イベント案内をEメール、郵送等でお送りさせていただくことがございます。予めご了承ください。Informaグループのプライバシーポリシーは<a href="https://privacy.informa.com/policies/ja-JP/" class="text-link" target="_blank" rel="noopener noreferrer">こちら</a>をご確認ください。
+            </p>
+          </div>
+
+          <!-- ===== 送信ボタン ===== -->
+          <div class="form-submit">
+            <button type="submit" id="submitBtn" class="btn-submit">
+              <span class="btn-submit__text">送信内容を確認する</span>
+              <svg class="btn-submit__arrow" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                   viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+              </svg>
+            </button>
+          </div>
+
+        </form>
+      </div><!-- /#formWrapper -->
+
+      <!-- ===== 確認ページ ===== -->
+      <div id="confirmationPage" class="confirmation-page" hidden>
+        <div class="confirmation-header">
+          <h2 class="confirmation-title">送信内容の確認</h2>
+          <p class="confirmation-desc">以下の内容でよろしければ「資料を請求する」を押してください。<br>修正がある場合は「入力に戻る」を押してください。</p>
+        </div>
+        <div id="confirmationContent"></div>
+        <div class="confirm-actions">
+          <button type="button" id="backToFormBtn" class="btn-back">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+            </svg>
+            入力に戻る
+          </button>
+          <button type="button" id="finalSubmitBtn" class="btn-submit">
+            <span class="btn-submit__text">資料を請求する</span>
+            <svg class="btn-submit__arrow" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 完了メッセージ -->
+      <div id="successMessage" class="result-message result-message--success" hidden aria-live="polite">
+        <span class="result-icon result-icon--success" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </span>
+        <h2 class="result-title">出展資料請求ありがとうございます</h2>
+        <p class="result-desc">ご入力いただいたメールアドレスへ確認メールをお送りしました。<br>追って、営業担当よりご案内させていただきますので、いましばらくお待ちください。</p>
+      </div>
+
+      <!-- エラーメッセージ -->
+      <div id="errorMessage" class="result-message result-message--error" hidden aria-live="polite">
+        <span class="result-icon result-icon--error" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </span>
+        <h2 class="result-title">送信に失敗しました</h2>
+        <p class="result-desc">しばらく時間をおいてから再度お試しください。</p>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p class="footer-text">&copy; 2025 健康博覧会 Exhibition. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
