@@ -25,6 +25,9 @@ desktop.ini
 *.log
 npm-debug.log*
 
+# Supabase CLI キャッシュ（自動生成・コミット不要）
+supabase/.temp/
+
 # 依存パッケージ（将来 Node.js を導入した場合）
 node_modules/
 
