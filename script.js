@@ -42,9 +42,10 @@ const errorMessage     = document.getElementById('errorMessage');
 // ================================================================
 // State
 // ================================================================
-let pendingData         = null;
+let pendingData          = null;
 let autoFilledPrefecture = '';
 let autoFilledAddress1   = '';
+let postalAbortController = null;
 
 // ================================================================
 // Helpers
@@ -344,11 +345,18 @@ function populateConfirmation(data) {
 // Postal code auto-fill  (zipcloud API)
 // ================================================================
 async function lookupPostalCode(digits) {
+  // 前のリクエストをキャンセルして競合を防ぐ
+  if (postalAbortController) postalAbortController.abort();
+  postalAbortController = new AbortController();
+
   const prefEl  = document.getElementById('prefecture');
   const addr1El = document.getElementById('address1');
 
   try {
-    const res  = await fetch(`https://zipcloud.ibsnet.co.jp/api/search?zipcode=${digits}`);
+    const res  = await fetch(
+      `https://zipcloud.ibsnet.co.jp/api/search?zipcode=${digits}`,
+      { signal: postalAbortController.signal }
+    );
     const data = await res.json();
 
     if (data.status === 200 && data.results?.length > 0) {
@@ -358,8 +366,8 @@ async function lookupPostalCode(digits) {
       autoFilledPrefecture = r.address1;
       prefEl.value = r.address1;
 
-      // 市区町村は未入力のときだけ自動入力
-      if (!addr1El.value.trim()) {
+      // 空 or 以前に自動入力した値のときのみ更新（手動入力は保持）
+      if (!addr1El.value.trim() || addr1El.value === autoFilledAddress1) {
         autoFilledAddress1 = r.address2 + r.address3;
         addr1El.value      = autoFilledAddress1;
       }
@@ -374,7 +382,8 @@ async function lookupPostalCode(digits) {
       if (errEl) errEl.textContent = '郵便番号が見つかりませんでした。正しい郵便番号を入力してください。';
       document.getElementById('postalCode')?.classList.add('is-error');
     }
-  } catch (_) {
+  } catch (err) {
+    if (err.name === 'AbortError') return;
     console.warn('[postal] 郵便番号APIに接続できませんでした。');
   }
 }
@@ -443,9 +452,9 @@ function bindRealtimeValidation() {
   });
 
   // 郵便番号: 7桁揃ったら自動検索 / 空になったら自動入力をクリア
-  document.getElementById('postalCode')?.addEventListener('input', e => {
-    const raw    = e.target.value;
-    const digits = raw.replace(/\D/g, '');
+  function handlePostalInput(e) {
+    const raw     = e.target.value;
+    const digits  = raw.replace(/\D/g, '');
     const prefEl  = document.getElementById('prefecture');
     const addr1El = document.getElementById('address1');
 
@@ -462,7 +471,11 @@ function bindRealtimeValidation() {
     // postalCode 自体のリアルタイムエラー解除
     const postalRule = RULES.find(r => r.inputId === 'postalCode');
     if (postalRule?.validate()) clearError(postalRule);
-  });
+  }
+
+  const postalEl = document.getElementById('postalCode');
+  postalEl?.addEventListener('input',  handlePostalInput);
+  postalEl?.addEventListener('change', handlePostalInput); // ペースト・ブラウザ自動入力にも対応
 
   // address1 を手動編集したら autoFilled フラグをリセット
   document.getElementById('address1')?.addEventListener('input', () => {
