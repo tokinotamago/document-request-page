@@ -1,30 +1,6 @@
 'use strict';
 
-// ================================================================
-// Supabase 設定
-// ================================================================
-const SUPABASE_URL      = 'https://wgxggqckupviquasiket.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndneGdncWNrdXB2aXF1YXNpa2V0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNDkwNTEsImV4cCI6MjA5NjgyNTA1MX0.6uL7c6hT1lhm1fHqejdAQBUgr4agvOW9Uou_5XJNbZY';
-const DB_TABLE          = 'document_requests';
-
-// ================================================================
-// チェックボックスの選択肢ラベル（確認ページ表示用）
-// ================================================================
-const PERIOD_LABELS = {
-  '2026_autumn': '健康博覧会2026・秋　9月30日（水）〜10月2日（金）',
-  '2027_spring': '健康博覧会2027・春　3月17日（水）〜19日（金）',
-  'undecided':   '未定',
-};
-
-const AREA_LABELS = {
-  'food_supplement':       '健康食品＆サプリメントEXPO',
-  'organic_natural':       'オーガニック＆ナチュラルEXPO',
-  'beauty_wellness':       'ビューティー＆ウェルネスEXPO',
-  'body_mind_recovery':    'ボディ＆マインドリカバリーEXPO',
-  'health_beauty_factory': '健康＆美容ファクトリーEXPO',
-  'age_tech_lab':          '【特別企画】AGE-TECH Lab. 2026（エイジテック・ラボ）',
-  'undecided':             '未定',
-};
+// Supabase設定・ラベル定義・HTML整形ヘルパーは shared.js を参照（index.htmlで先読み込み）
 
 // ================================================================
 // DOM references
@@ -271,74 +247,10 @@ function collectFormData() {
 }
 
 // ================================================================
-// Confirmation page — 動的生成
+// Confirmation page — 動的生成（HTML整形は shared.js の buildRequestDetailHtml を利用）
 // ================================================================
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-function toHtml(value) {
-  if (value === null || value === undefined || value === false || value === '') return '—';
-  if (Array.isArray(value)) {
-    return value.length > 0 ? value.map(v => escapeHtml(String(v))).join('<br>') : '—';
-  }
-  return escapeHtml(String(value));
-}
-
-function makeRow(label, value) {
-  return `<div class="confirm-row"><dt>${escapeHtml(label)}</dt><dd>${toHtml(value)}</dd></div>`;
-}
-
-function makeBlock(title, rows) {
-  return `<div class="confirm-block">
-    <dl class="confirm-list">${rows.join('')}</dl>
-  </div>`;
-}
-
 function populateConfirmation(data) {
-  const postal = data.postal_code
-    ? `〒${data.postal_code.slice(0, 3)}-${data.postal_code.slice(3)}`
-    : '';
-  const address = [postal, data.prefecture, data.address1, data.address2]
-    .filter(Boolean).join('　');
-
-  const html = [
-    makeBlock('貴社・ご担当者情報', [
-      makeRow('貴社名',   data.company_name),
-      makeRow('ご担当者', `${data.last_name} ${data.first_name}`),
-      makeRow('ふりがな', `${data.last_name_kana} ${data.first_name_kana}`),
-      makeRow('部署',     data.department),
-      makeRow('役職',     data.job_title),
-    ]),
-    makeBlock('連絡先情報', [
-      makeRow('メールアドレス',   data.email),
-      makeRow('連絡先電話番号',   data.phone),
-      makeRow('住所',             address || null),
-      makeRow('WEBサイト',        data.website || null),
-    ]),
-    makeBlock('出展について', [
-      makeRow('出展予定製品',
-        data.exhibit_products),
-      makeRow('出展を検討する会期',
-        data.exhibit_periods.map(v => PERIOD_LABELS[v] || v)),
-      makeRow('出展を希望するエリア',
-        data.exhibit_areas.map(v => AREA_LABELS[v] || v)),
-      makeRow('該当（創業5年以内）',
-        data.startup_check ? '創業５年以内' : null),
-    ]),
-    makeBlock('その他', [
-      makeRow('出会いたい業種',               data.target_industry || null),
-      makeRow('本展以外の出展検討中の展示会',  data.other_shows     || null),
-      makeRow('オンライン商談希望日時',        data.online_meeting  || null),
-      makeRow('その他',                       data.other_notes     || null),
-    ]),
-  ].join('');
-
-  document.getElementById('confirmationContent').innerHTML = html;
+  document.getElementById('confirmationContent').innerHTML = buildRequestDetailHtml(data);
 }
 
 // ================================================================

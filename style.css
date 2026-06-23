@@ -613,6 +613,7 @@ body {
     flex-direction: column-reverse;
     gap: 12px;
   }
-  .btn-back,
-  .btn-submit { width: 100%; justify-content: center; }
+  .confirmation-page .btn-back,
+  .confirmation-page .btn-submit,
+  .form-submit .btn-submit { width: 100%; justify-content: center; }
 }

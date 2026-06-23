@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理画面 | 出展資料請求</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-body">
+
+  <!-- ========== ログイン画面 ========== -->
+  <div id="loginScreen" class="login-screen" hidden>
+    <form id="loginForm" class="login-form" novalidate>
+      <h1 class="login-title">管理画面ログイン</h1>
+
+      <div class="form-group">
+        <label class="form-label" for="loginEmail">メールアドレス</label>
+        <input type="email" id="loginEmail" class="form-input"
+               autocomplete="username" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="loginPassword">パスワード</label>
+        <input type="password" id="loginPassword" class="form-input"
+               autocomplete="current-password" required>
+      </div>
+
+      <span class="error-message" id="loginError" role="alert"></span>
+
+      <button type="submit" id="loginSubmitBtn" class="btn-submit login-submit">
+        <span class="btn-submit__text">ログイン</span>
+      </button>
+    </form>
+  </div>
+
+  <!-- ========== 管理画面本体 ========== -->
+  <div id="adminApp" class="admin-app" hidden>
+
+    <header class="admin-header">
+      <div class="admin-header__inner">
+        <h1 class="admin-title">出展資料請求 管理画面</h1>
+        <div class="admin-header__right">
+          <span id="loggedInEmail" class="admin-user-email"></span>
+          <button type="button" id="logoutBtn" class="btn-back admin-logout-btn">ログアウト</button>
+        </div>
+      </div>
+      <nav class="admin-tabs" role="tablist" aria-label="管理画面メニュー">
+        <button type="button" class="admin-tab is-active" id="tab-dashboard"
+                data-tab="dashboard" role="tab" aria-selected="true">ダッシュボード</button>
+        <button type="button" class="admin-tab" id="tab-list"
+                data-tab="list" role="tab" aria-selected="false">資料請求リスト</button>
+        <button type="button" class="admin-tab" id="tab-settings"
+                data-tab="settings" role="tab" aria-selected="false">設定</button>
+      </nav>
+    </header>
+
+    <main class="admin-main">
+      <section id="panel-dashboard" class="admin-panel" role="tabpanel">
+
+
+        <div class="dashboard-kpis">
+          <div class="kpi-card">
+            <span class="kpi-label">本日の資料請求</span>
+            <span class="kpi-value" id="kpiToday">—</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">今週の資料請求</span>
+            <span class="kpi-value" id="kpiWeek">—</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">今月の資料請求</span>
+            <span class="kpi-value" id="kpiMonth">—</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">今年度の資料請求</span>
+            <span class="kpi-value" id="kpiTotal">—</span>
+          </div>
+        </div>
+
+        <p class="dashboard-error" id="dashboardError" hidden></p>
+
+        <div class="dashboard-charts">
+          <div class="chart-card chart-card--full chart-card--status">
+            <div class="status-header-row">
+              <div class="status-filter-bar">
+                <label class="dashboard-filter-label" for="statusFromDate">期間</label>
+                <input type="date" id="statusFromDate" class="form-input dashboard-filter-date">
+                <span class="dashboard-filter-sep">〜</span>
+                <input type="date" id="statusToDate" class="form-input dashboard-filter-date">
+                <button type="button" id="applyStatusFilter" class="btn-back dashboard-filter-btn">絞り込む</button>
+                <button type="button" id="resetStatusFilter" class="btn-back dashboard-filter-btn">リセット</button>
+              </div>
+            </div>
+            <div id="statusChartContainer"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="panel-list" class="admin-panel" role="tabpanel" hidden>
+
+        <div class="list-toolbar">
+          <input type="search" id="searchInput" class="form-input list-search"
+                 placeholder="貴社名・担当者名・メールアドレスで検索">
+          <div class="list-toolbar__right">
+            <span id="listCount" class="list-count"></span>
+            <button type="button" id="importCsvBtn" class="btn-back">CSVインポート</button>
+            <button type="button" id="exportCsvBtn" class="btn-back">CSVダウンロード</button>
+          </div>
+        </div>
+
+        <div class="list-filter-bar">
+          <div class="list-filter-group">
+            <label class="list-filter-label" for="salesRepFilterSelect">営業担当</label>
+            <select id="salesRepFilterSelect" class="form-input list-filter-select">
+              <option value="">全員</option>
+            </select>
+          </div>
+          <div class="list-filter-group">
+            <label class="list-filter-label" for="statusFilterSelect">対応状況</label>
+            <select id="statusFilterSelect" class="form-input list-filter-select">
+              <option value="">すべて</option>
+            </select>
+          </div>
+          <button type="button" id="resetListFilterBtn" class="btn-back list-filter-reset-btn">リセット</button>
+        </div>
+
+        <div class="table-wrap">
+          <table class="admin-table" id="requestsTable">
+            <thead>
+              <tr>
+                <th>営業担当</th>
+                <th>対応状況</th>
+                <th data-sort="submitted_at" class="is-sortable is-sorted-desc">送信日時</th>
+                <th data-sort="company_name" class="is-sortable">社名</th>
+                <th class="col-circle-th">オンライン<br>商談希望</th>
+                <th class="col-circle-th">創業<br>5年以内</th>
+              </tr>
+            </thead>
+            <tbody id="requestsTableBody"></tbody>
+          </table>
+        </div>
+
+        <p class="list-empty" id="listEmpty" hidden>該当案件がありません。</p>
+        <p class="list-error" id="listError" hidden></p>
+
+        <div class="pagination">
+          <button type="button" id="prevPageBtn" class="btn-back" disabled>前へ</button>
+          <span id="pageInfo" class="page-info"></span>
+          <button type="button" id="nextPageBtn" class="btn-back" disabled>次へ</button>
+        </div>
+      </section>
+
+      <section id="panel-settings" class="admin-panel" role="tabpanel" hidden>
+        <div class="settings-section">
+          <h2 class="settings-section-title">営業担当者の管理</h2>
+          <div class="settings-add-row">
+            <input type="text" id="newSalesRepInput" class="form-input settings-rep-input"
+                   placeholder="担当者名を入力" maxlength="50">
+            <button type="button" id="addSalesRepBtn" class="btn-submit settings-add-btn">追加</button>
+          </div>
+          <p class="settings-add-error" id="salesRepAddError" aria-live="polite"></p>
+          <ul class="settings-rep-list" id="salesRepList"></ul>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ========== 詳細モーダル ========== -->
+  <div id="detailModal" class="modal-overlay" hidden>
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="detailModalTitle">
+      <div class="modal-header">
+        <div class="modal-header__left">
+          <h2 id="detailModalTitle" class="modal-title"></h2>
+          <select id="detailStatusSelect" class="status-select"></select>
+          <span id="detailStatusSaved" class="status-saved-msg" aria-live="polite"></span>
+        </div>
+        <button type="button" id="closeDetailModalBtn" class="modal-close" aria-label="閉じる">&times;</button>
+      </div>
+      <div id="detailModalBody" class="modal-body"></div>
+      <div class="modal-footer modal-footer--detail">
+        <button type="button" id="cancelEditBtn" class="btn-back modal-save-btn" hidden>キャンセル</button>
+        <button type="button" id="editRequestBtn" class="btn-back">編集</button>
+        <button type="button" id="deleteRequestBtn" class="btn-back btn-danger">この資料請求を削除</button>
+        <button type="button" id="saveRequestBtn" class="btn-submit modal-save-btn" hidden>修正を保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== CSVフィルターモーダル ========== -->
+  <div id="csvFilterModal" class="modal-overlay" hidden>
+    <div class="modal-box modal-box--csv-filter" role="dialog" aria-modal="true" aria-labelledby="csvFilterTitle">
+      <div class="modal-header">
+        <h2 id="csvFilterTitle" class="modal-title">CSVダウンロード設定</h2>
+        <button type="button" id="closeCsvFilterBtn" class="modal-close" aria-label="閉じる">&times;</button>
+      </div>
+      <div class="modal-body csv-filter-body">
+        <div class="csv-filter-row">
+          <span class="csv-filter-label">期間</span>
+          <div class="csv-filter-dates">
+            <input type="date" id="csvFromDate" class="form-input csv-date-input">
+            <span class="csv-date-sep">〜</span>
+            <input type="date" id="csvToDate" class="form-input csv-date-input">
+          </div>
+        </div>
+        <div class="csv-filter-row">
+          <span class="csv-filter-label">営業担当</span>
+          <select id="csvSalesRep" class="form-input csv-select-input">
+            <option value="">全員</option>
+          </select>
+        </div>
+        <div class="csv-filter-row csv-filter-row--top">
+          <span class="csv-filter-label">対応状況</span>
+          <div id="csvStatusCheckboxes" class="csv-status-checkboxes"></div>
+        </div>
+      </div>
+      <div class="modal-footer csv-modal-footer">
+        <button type="button" id="executeCsvBtn" class="btn-submit csv-dl-btn">選択項目をダウンロード</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== CSVインポートモーダル ========== -->
+  <div id="csvImportModal" class="modal-overlay" hidden>
+    <div class="modal-box modal-box--import" role="dialog" aria-modal="true" aria-labelledby="csvImportTitle">
+      <div class="modal-header">
+        <h2 id="csvImportTitle" class="modal-title">CSVインポート</h2>
+        <button type="button" id="closeCsvImportBtn" class="modal-close" aria-label="閉じる">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="csvImportStep1">
+          <label class="csv-import-drop" id="csvImportDrop" for="csvImportFile">
+            <input type="file" id="csvImportFile" accept=".csv" class="csv-import-file-hidden">
+            <span class="csv-import-drop-text">CSVファイルをドラッグ&amp;ドロップ<br>または<span class="csv-import-browse-link">クリックして選択</span></span>
+          </label>
+          <p class="csv-import-note">インポート用のcsvフォーマットは<button type="button" id="importTemplateDownloadBtn" class="csv-import-link-btn">こちら</button>からダウンロード可能です</p>
+        </div>
+        <div id="csvImportStep2" hidden>
+          <p class="csv-import-preview-info" id="csvImportPreviewInfo"></p>
+          <div class="csv-import-preview-wrap" id="csvImportPreviewWrap"></div>
+          <p class="csv-import-note csv-import-note--warn">重複チェックは行いません。同じファイルを複数回インポートすると重複データが登録されます。</p>
+        </div>
+        <div id="csvImportStep3" hidden>
+          <p class="csv-import-result" id="csvImportResult"></p>
+        </div>
+      </div>
+      <div class="modal-footer csv-modal-footer">
+        <button type="button" id="cancelCsvImportBtn" class="btn-back">キャンセル</button>
+        <button type="button" id="executeCsvImportBtn" class="btn-submit modal-save-btn" disabled>インポート実行</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <script src="shared.js" defer></script>
+  <script src="admin.js" defer></script>
+</body>
+</html>
