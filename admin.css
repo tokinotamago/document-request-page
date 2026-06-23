@@ -146,12 +146,6 @@
   padding: 24px;
 }
 
-.admin-placeholder {
-  color: var(--c-text-muted);
-  text-align: center;
-  padding: 48px 0;
-}
-
 /* ============================================================
    一覧パネル（検索・テーブル・ページネーション）
    ============================================================ */
@@ -447,24 +441,6 @@
   overflow-y: auto;
 }
 
-.modal-status-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 24px 0;
-}
-
-.modal-status-row .form-label {
-  margin: 0;
-  white-space: nowrap;
-}
-
-.modal-status-row select {
-  flex: 0 0 auto;
-  width: auto;
-  min-width: 160px;
-}
-
 .status-saved-msg {
   font-size: 12px;
   color: #1e7e34;
@@ -478,12 +454,6 @@
   gap: 12px;
 }
 
-.modal-footer__right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .modal-save-btn {
   padding: 11px 28px;
   font-size: 13px;
@@ -494,10 +464,6 @@
 .modal-footer--detail,
 .modal-footer--edit {
   justify-content: center;
-}
-
-.modal-box--sm {
-  max-width: 420px;
 }
 
 /* 詳細モーダル内の確認行 — ブロック間も行と同じ間隔に統一 */
@@ -572,13 +538,6 @@
   padding: 16px 20px;
 }
 
-.chart-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--c-accent);
-  margin-bottom: 12px;
-}
-
 .chart-canvas-wrap {
   position: relative;
   height: 260px;
@@ -586,27 +545,6 @@
 
 .chart-card--full {
   grid-column: 1 / -1;
-}
-
-.status-chart-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.status-chart-header .chart-title {
-  margin-bottom: 0;
-}
-
-.follow-count-badge {
-  font-size: 12px;
-  font-weight: 600;
-  color: #1565c0;
-  background: #e3f0ff;
-  border-radius: 999px;
-  padding: 4px 14px;
-  margin-left: 12px;
-  white-space: nowrap;
 }
 
 .chart-canvas-wrap--status {
@@ -620,10 +558,6 @@
   flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 16px;
-}
-
-.status-header-row .chart-title {
-  margin-bottom: 0;
 }
 
 .status-filter-bar {
@@ -671,24 +605,6 @@
 /* ============================================================
    ダッシュボードフィルター
    ============================================================ */
-.dashboard-filter-bar {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-  padding: 14px 18px;
-  background: #f8f9fb;
-  border: 1px solid var(--c-divider);
-  border-radius: var(--radius-md);
-  margin-bottom: 24px;
-}
-
-.dashboard-filter-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .dashboard-filter-label {
   font-size: 13px;
   font-weight: 600;
@@ -705,13 +621,6 @@
 .dashboard-filter-sep {
   font-size: 13px;
   color: var(--c-text-muted);
-}
-
-.dashboard-filter-select {
-  min-width: 110px !important;
-  width: auto !important;
-  padding: 6px 8px !important;
-  font-size: 13px !important;
 }
 
 .dashboard-filter-btn {
@@ -739,8 +648,6 @@
     justify-content: space-between;
   }
 
-  .dashboard-filter-bar { flex-direction: column; align-items: stretch; }
-  .dashboard-filter-group { flex-wrap: wrap; }
   .dashboard-filter-date { width: 100% !important; flex: 1; }
   .dashboard-filter-btn { width: 100%; justify-content: center; }
 
@@ -1105,7 +1012,7 @@
 
 .settings-add-error {
   font-size: 12px;
-  color: var(--c-danger);
+  color: var(--c-error);
   margin: 6px 0 0;
   min-height: 16px;
 }
@@ -1139,19 +1046,19 @@
 
 .settings-rep-delete {
   font-size: 12px;
-  color: var(--c-danger);
-  border-color: var(--c-danger);
+  color: var(--c-error);
+  border-color: var(--c-error);
   padding: 4px 12px;
 }
 
 .settings-rep-delete:hover {
-  background: var(--c-danger);
+  background: var(--c-error);
   color: #fff;
 }
 
 .settings-rep-empty {
   padding: 16px;
   text-align: center;
-  color: var(--c-muted);
+  color: var(--c-text-muted);
   font-size: 13px;
 }

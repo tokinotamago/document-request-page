@@ -58,8 +58,8 @@ body {
     linear-gradient(to top, rgba(0,8,20,0.72) 0%, rgba(0,8,20,0.28) 45%, rgba(0,8,20,0.05) 100%),
     /* ブランドカラー（#002244）薄掛け */
     linear-gradient(158deg, rgba(0,34,68,0.25) 0%, rgba(0,34,68,0.08) 100%),
-    /* 展示会写真 — 顔が映り込むよう上寄りに配置 */
-    url('document-request-page-top.png') center 20% / cover no-repeat;
+    /* 展示会写真 */
+    url('document-request-page-top.jpg') center 35% / cover no-repeat;
 }
 
 /* 展示会場の格子天井・床を表現するグリッドオーバーレイ */
@@ -72,39 +72,6 @@ body {
     linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
   background-size: 48px 48px;
   pointer-events: none;
-}
-
-.hero-inner {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: calc(var(--max-w) + 48px); /* 680 + 24*2 = 728px — container の左端に揃える */
-  margin: 0 auto;
-  padding: 16px 24px;
-}
-
-.hero-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.3em;
-  color: rgba(255,255,255,0.40);
-  margin-bottom: 12px;
-  text-transform: uppercase;
-}
-
-.hero-title {
-  font-size: clamp(18px, 2.5vw, 22px);
-  font-weight: 800;
-  color: #ffffff;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-  margin-bottom: 10px;
-}
-
-.hero-desc {
-  font-size: 13.5px;
-  color: rgba(255,255,255,0.58);
-  line-height: 1.85;
 }
 
 /* ============================================================
@@ -461,17 +428,6 @@ body {
   border-top: 1px solid var(--c-divider);
 }
 
-.confirm-block-title {
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--c-black);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding-bottom: 10px;
-  margin-bottom: 14px;
-  border-bottom: 2px solid var(--c-black);
-}
-
 .confirm-list { display: block; }
 
 .confirm-row {
@@ -589,7 +545,6 @@ body {
    ============================================================ */
 @media (max-width: 600px) {
   .site-hero  { min-height: 208px; }
-  .hero-inner { padding: 14px 20px 24px; }
 
   .main-content { padding: 32px 20px 80px; }
 

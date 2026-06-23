@@ -73,7 +73,7 @@ function makeRow(label, value) {
   return `<div class="confirm-row"><dt>${escapeHtml(label)}</dt><dd>${toHtml(value)}</dd></div>`;
 }
 
-function makeBlock(title, rows) {
+function makeBlock(rows) {
   return `<div class="confirm-block">
     <dl class="confirm-list">${rows.join('')}</dl>
   </div>`;
@@ -102,20 +102,20 @@ function formatDateTimeJa(iso) {
 // document_requests の1レコードを makeBlock 用のHTMLに整形（確認ページ・詳細モーダル共通）
 function buildRequestDetailHtml(data) {
   return [
-    makeBlock('貴社・ご担当者情報', [
+    makeBlock([
       makeRow('貴社名',   data.company_name),
       makeRow('ご担当者', `${data.last_name} ${data.first_name}`),
       makeRow('ふりがな', `${data.last_name_kana} ${data.first_name_kana}`),
       makeRow('部署',     data.department),
       makeRow('役職',     data.job_title),
     ]),
-    makeBlock('連絡先情報', [
+    makeBlock([
       makeRow('メールアドレス', data.email),
       makeRow('連絡先電話番号', data.phone),
       makeRow('住所',           formatAddress(data) || null),
       makeRow('WEBサイト',      data.website || null),
     ]),
-    makeBlock('出展について', [
+    makeBlock([
       makeRow('出展予定製品',
         data.exhibit_products),
       makeRow('出展を検討する会期',
@@ -125,7 +125,7 @@ function buildRequestDetailHtml(data) {
       makeRow('該当（創業5年以内）',
         data.startup_check ? '創業５年以内' : null),
     ]),
-    makeBlock('その他', [
+    makeBlock([
       makeRow('出会いたい業種',               data.target_industry || null),
       makeRow('本展以外の出展検討中の展示会',  data.other_shows     || null),
       makeRow('オンライン商談希望日時',        data.online_meeting  || null),

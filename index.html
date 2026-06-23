@@ -24,7 +24,7 @@
       <div id="formWrapper">
         <p class="form-lead"><span class="required-mark">※</span>マークは必須入力項目です。</p>
 
-        <form id="documentRequestForm" class="request-form" method="POST" action="#" novalidate data-form="document-request">
+        <form id="documentRequestForm" method="POST" action="#" novalidate>
 
           <input type="hidden" id="formSource"  name="source"       value="exhibition_2025">
           <input type="hidden" id="submittedAt" name="submitted_at" value="">
@@ -37,7 +37,7 @@
                 貴社名<span class="required-mark">※</span>
               </label>
               <input type="text" id="companyName" name="company_name" class="form-input"
-                     placeholder="社名" autocomplete="organization" required data-field="company_name">
+                     placeholder="社名" autocomplete="organization" required>
               <span class="error-message" id="error-companyName" role="alert"></span>
             </div>
 
@@ -48,12 +48,12 @@
               <div class="input-row">
                 <div class="input-row__item">
                   <input type="text" id="lastName" name="last_name" class="form-input"
-                         placeholder="姓" autocomplete="family-name" required data-field="last_name">
+                         placeholder="姓" autocomplete="family-name" required>
                   <span class="error-message" id="error-lastName" role="alert"></span>
                 </div>
                 <div class="input-row__item">
                   <input type="text" id="firstName" name="first_name" class="form-input"
-                         placeholder="名" autocomplete="given-name" required data-field="first_name">
+                         placeholder="名" autocomplete="given-name" required>
                   <span class="error-message" id="error-firstName" role="alert"></span>
                 </div>
               </div>
@@ -66,12 +66,12 @@
               <div class="input-row">
                 <div class="input-row__item">
                   <input type="text" id="lastNameKana" name="last_name_kana" class="form-input"
-                         placeholder="せい" required data-field="last_name_kana">
+                         placeholder="せい" required>
                   <span class="error-message" id="error-lastNameKana" role="alert"></span>
                 </div>
                 <div class="input-row__item">
                   <input type="text" id="firstNameKana" name="first_name_kana" class="form-input"
-                         placeholder="めい" required data-field="first_name_kana">
+                         placeholder="めい" required>
                   <span class="error-message" id="error-firstNameKana" role="alert"></span>
                 </div>
               </div>
@@ -82,7 +82,7 @@
                 部署<span class="required-mark">※</span>
               </label>
               <input type="text" id="department" name="department" class="form-input"
-                     placeholder="部署" autocomplete="organization-title" required data-field="department">
+                     placeholder="部署" autocomplete="organization-title" required>
               <span class="error-message" id="error-department" role="alert"></span>
             </div>
 
@@ -91,7 +91,7 @@
                 役職<span class="required-mark">※</span>
               </label>
               <input type="text" id="jobTitle" name="job_title" class="form-input"
-                     placeholder="役職" required data-field="job_title">
+                     placeholder="役職" required>
               <span class="error-message" id="error-jobTitle" role="alert"></span>
             </div>
 
@@ -105,7 +105,7 @@
                 メールアドレス<span class="required-mark">※</span>
               </label>
               <input type="email" id="email" name="email" class="form-input"
-                     placeholder="メールアドレス" autocomplete="email" required data-field="email">
+                     placeholder="メールアドレス" autocomplete="email" required>
               <span class="error-message" id="error-email" role="alert"></span>
             </div>
 
@@ -114,7 +114,7 @@
                 メールアドレス（確認用）<span class="required-mark">※</span>
               </label>
               <input type="email" id="emailConfirm" name="email_confirm" class="form-input"
-                     placeholder="メールアドレス（確認用）" autocomplete="off" required data-field="email_confirm">
+                     placeholder="メールアドレス（確認用）" autocomplete="off" required>
               <span class="error-message" id="error-emailConfirm" role="alert"></span>
             </div>
 
@@ -123,7 +123,7 @@
                 連絡先電話番号<span class="required-mark">※</span>
               </label>
               <input type="tel" id="phone" name="phone" class="form-input"
-                     placeholder="連絡先電話番号" autocomplete="tel" required data-field="phone">
+                     placeholder="連絡先電話番号" autocomplete="tel" required>
               <span class="error-message" id="error-phone" role="alert"></span>
             </div>
 
@@ -138,8 +138,7 @@
                   <span class="address-sub-label">郵便番号</span>
                   <div class="postal-row">
                     <input type="text" id="postalCode" name="postal_code" class="form-input"
-                           placeholder="郵便番号" maxlength="8" autocomplete="postal-code"
-                           required data-field="postal_code">
+                           placeholder="郵便番号" maxlength="8" autocomplete="postal-code" required>
                     <span class="postal-hint">ハイフンあり・なしどちらでも可（7桁）</span>
                   </div>
                   <span class="error-message" id="error-postalCode" role="alert"></span>
@@ -148,31 +147,29 @@
                 <div class="address-sub-field">
                   <span class="address-sub-label">都道府県</span>
                   <input type="text" id="prefecture" name="prefecture" class="form-input"
-                         placeholder="都道府県" autocomplete="address-level1"
-                         required data-field="prefecture" readonly>
+                         placeholder="都道府県" autocomplete="address-level1" required readonly>
                 </div>
 
                 <div class="address-sub-field">
                   <span class="address-sub-label">市区町村・番地</span>
                   <input type="text" id="address1" name="address1" class="form-input"
-                         placeholder="市区町村・番地" autocomplete="address-level2"
-                         required data-field="address1">
+                         placeholder="市区町村・番地" autocomplete="address-level2" required>
                   <span class="error-message" id="error-address1" role="alert"></span>
                 </div>
 
                 <div class="address-sub-field">
                   <span class="address-sub-label">ビル名ほか</span>
                   <input type="text" id="address2" name="address2" class="form-input"
-                         placeholder="ビル名ほか" autocomplete="address-line3" data-field="address2">
+                         placeholder="ビル名ほか" autocomplete="address-line3">
                 </div>
 
               </div>
             </div>
 
-            <div class="form-group" id="group-website">
+            <div class="form-group">
               <label class="form-label" for="website">WEBサイト</label>
               <input type="url" id="website" name="website" class="form-input"
-                     placeholder="WEBサイト" autocomplete="url" data-field="website">
+                     placeholder="WEBサイト" autocomplete="url">
             </div>
 
           </section>
@@ -185,7 +182,7 @@
                 出展予定製品<span class="required-mark">※</span>
               </label>
               <input type="text" id="exhibitProducts" name="exhibit_products" class="form-input"
-                     placeholder="健康食品、健康機器、健康アプリなど" required data-field="exhibit_products">
+                     placeholder="健康食品、健康機器、健康アプリなど" required>
               <span class="error-message" id="error-exhibitProducts" role="alert"></span>
             </div>
 
@@ -193,23 +190,22 @@
               <label class="form-label">
                 出展を検討する会期<span class="required-mark">※</span>
               </label>
-              <div class="checkbox-group" id="exhibitPeriodGroup"
-                   role="group" aria-label="出展を検討する会期">
+              <div class="checkbox-group" role="group" aria-label="出展を検討する会期">
                 <label class="check-item" for="period-2026-autumn">
                   <input type="checkbox" id="period-2026-autumn" name="exhibit_periods"
-                         value="2026_autumn" class="check-input" data-field="exhibit_periods">
+                         value="2026_autumn" class="check-input">
                   <span class="check-custom" aria-hidden="true"></span>
                   <span class="check-text">健康博覧会2026・秋　9月30日（水）〜10月2日（金）</span>
                 </label>
                 <label class="check-item" for="period-2027-spring">
                   <input type="checkbox" id="period-2027-spring" name="exhibit_periods"
-                         value="2027_spring" class="check-input" data-field="exhibit_periods">
+                         value="2027_spring" class="check-input">
                   <span class="check-custom" aria-hidden="true"></span>
                   <span class="check-text">健康博覧会2027・春　3月17日（水）〜19日（金）</span>
                 </label>
                 <label class="check-item" for="period-undecided">
                   <input type="checkbox" id="period-undecided" name="exhibit_periods"
-                         value="undecided" class="check-input" data-field="exhibit_periods">
+                         value="undecided" class="check-input">
                   <span class="check-custom" aria-hidden="true"></span>
                   <span class="check-text">未定</span>
                 </label>
@@ -221,47 +217,46 @@
               <label class="form-label">
                 出展を希望するエリア<span class="required-mark">※</span>
               </label>
-              <div class="checkbox-group" id="exhibitAreaGroup"
-                   role="group" aria-label="出展を希望するエリア">
+              <div class="checkbox-group" role="group" aria-label="出展を希望するエリア">
                 <label class="check-item" for="area-food-supplement">
                   <input type="checkbox" id="area-food-supplement" name="exhibit_areas"
-                         value="food_supplement" class="check-input" data-field="exhibit_areas">
+                         value="food_supplement" class="check-input">
                   <span class="check-custom" aria-hidden="true"></span>
                   <span class="check-text">健康食品＆サプリメントEXPO</span>
                 </label>
                 <label class="check-item" for="area-organic-natural">
                   <input type="checkbox" id="area-organic-natural" name="exhibit_areas"
-                         value="organic_natural" class="check-input" data-field="exhibit_areas">
+                         value="organic_natural" class="check-input">
                   <span class="check-custom" aria-hidden="true"></span>
                   <span class="check-text">オーガニック＆ナチュラルEXPO</span>
                 </label>
                 <label class="check-item" for="area-beauty-wellness">
                   <input type="checkbox" id="area-beauty-wellness" name="exhibit_areas"
-                         value="beauty_wellness" class="check-input" data-field="exhibit_areas">
+                         value="beauty_wellness" class="check-input">
                   <span class="check-custom" aria-hidden="true"></span>
                   <span class="check-text">ビューティー＆ウェルネスEXPO</span>
                 </label>
                 <label class="check-item" for="area-body-mind">
                   <input type="checkbox" id="area-body-mind" name="exhibit_areas"
-                         value="body_mind_recovery" class="check-input" data-field="exhibit_areas">
+                         value="body_mind_recovery" class="check-input">
                   <span class="check-custom" aria-hidden="true"></span>
                   <span class="check-text">ボディ＆マインドリカバリーEXPO</span>
                 </label>
                 <label class="check-item" for="area-factory">
                   <input type="checkbox" id="area-factory" name="exhibit_areas"
-                         value="health_beauty_factory" class="check-input" data-field="exhibit_areas">
+                         value="health_beauty_factory" class="check-input">
                   <span class="check-custom" aria-hidden="true"></span>
                   <span class="check-text">健康＆美容ファクトリーEXPO</span>
                 </label>
                 <label class="check-item" for="area-age-tech">
                   <input type="checkbox" id="area-age-tech" name="exhibit_areas"
-                         value="age_tech_lab" class="check-input" data-field="exhibit_areas">
+                         value="age_tech_lab" class="check-input">
                   <span class="check-custom" aria-hidden="true"></span>
                   <span class="check-text">【特別企画】AGE-TECH Lab. 2026（エイジテック・ラボ）</span>
                 </label>
                 <label class="check-item" for="area-undecided">
                   <input type="checkbox" id="area-undecided" name="exhibit_areas"
-                         value="undecided" class="check-input" data-field="exhibit_areas">
+                         value="undecided" class="check-input">
                   <span class="check-custom" aria-hidden="true"></span>
                   <span class="check-text">未定</span>
                 </label>
@@ -269,12 +264,12 @@
               <span class="error-message" id="error-exhibitAreas" role="alert"></span>
             </div>
 
-            <div class="form-group" id="group-startupCheck">
+            <div class="form-group">
               <label class="form-label">該当する方はチェックしてください</label>
               <div class="checkbox-group">
                 <label class="check-item" for="startupCheck">
                   <input type="checkbox" id="startupCheck" name="startup_check"
-                         value="startup" class="check-input" data-field="startup_check">
+                         value="startup" class="check-input">
                   <span class="check-custom" aria-hidden="true"></span>
                   <span class="check-text">創業５年以内</span>
                 </label>
@@ -286,38 +281,36 @@
           <!-- ===== SECTION: その他 ===== -->
           <section class="form-section" id="section-other">
 
-            <div class="form-group" id="group-targetIndustry">
+            <div class="form-group">
               <label class="form-label" for="targetIndustry">出会いたい業種</label>
               <input type="text" id="targetIndustry" name="target_industry" class="form-input"
-                     placeholder="出会いたい業種" data-field="target_industry">
+                     placeholder="出会いたい業種">
             </div>
 
-            <div class="form-group" id="group-otherShows">
+            <div class="form-group">
               <label class="form-label" for="otherShows">本展以外の出展検討中の展示会</label>
               <input type="text" id="otherShows" name="other_shows" class="form-input"
-                     placeholder="本展以外の出展検討中の展示会" data-field="other_shows">
+                     placeholder="本展以外の出展検討中の展示会">
             </div>
 
-            <div class="form-group" id="group-onlineMeeting">
+            <div class="form-group">
               <label class="form-label" for="onlineMeeting">
                 オンライン商談を希望される方は、希望日時を入力してください。
               </label>
               <textarea id="onlineMeeting" name="online_meeting" class="form-textarea" rows="3"
-                        placeholder="オンライン商談を希望される方は、希望日時を入力してください。"
-                        data-field="online_meeting"></textarea>
+                        placeholder="オンライン商談を希望される方は、希望日時を入力してください。"></textarea>
             </div>
 
-            <div class="form-group" id="group-otherNotes">
+            <div class="form-group">
               <label class="form-label" for="otherNotes">その他</label>
               <textarea id="otherNotes" name="other_notes" class="form-textarea" rows="4"
-                        placeholder="出展に関する質問事項などがございましたら、こちらにご記入ください"
-                        data-field="other_notes"></textarea>
+                        placeholder="出展に関する質問事項などがございましたら、こちらにご記入ください"></textarea>
             </div>
 
           </section>
 
-          <!-- ===== 個人情報取得に関する文言（チェックボックスなし） ===== -->
-          <div class="privacy-section" id="section-privacy">
+          <!-- ===== 個人情報取得に関する文言 ===== -->
+          <div class="privacy-section">
             <p class="privacy-text">
               貴殿の個人情報は弊社のプライバシーポリシーに基づき、Informaグループが主催する各種イベント案内をEメール、郵送等でお送りさせていただくことがございます。予めご了承ください。Informaグループのプライバシーポリシーは<a href="https://privacy.informa.com/policies/ja-JP/" class="text-link" target="_blank" rel="noopener noreferrer">こちら</a>をご確認ください。
             </p>
@@ -366,7 +359,7 @@
       </div>
 
       <!-- 完了メッセージ -->
-      <div id="successMessage" class="result-message result-message--success" hidden aria-live="polite">
+      <div id="successMessage" class="result-message" hidden aria-live="polite">
         <span class="result-icon result-icon--success" aria-hidden="true">
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
                fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -378,7 +371,7 @@
       </div>
 
       <!-- エラーメッセージ -->
-      <div id="errorMessage" class="result-message result-message--error" hidden aria-live="polite">
+      <div id="errorMessage" class="result-message" hidden aria-live="polite">
         <span class="result-icon result-icon--error" aria-hidden="true">
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
                fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">

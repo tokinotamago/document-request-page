@@ -302,6 +302,7 @@ async function lookupPostalCode(digits) {
 
 // ================================================================
 // Submission
+// ================================================================
 async function submitToServer(data) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${DB_TABLE}`, {
     method: 'POST',

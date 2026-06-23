@@ -327,41 +327,6 @@ function recordsToCsv(records) {
   return [header, ...rows].join('\r\n');
 }
 
-async function handleExportCsv() {
-  exportCsvBtn.disabled = true;
-  exportCsvBtn.textContent = '出力中...';
-  try {
-    let query = supabaseClient.from(DB_TABLE).select('*');
-    const q = listState.searchQuery.trim();
-    if (q) {
-      const escaped = q.replace(/[%,]/g, '');
-      query = query.or(
-        `company_name.ilike.%${escaped}%,last_name.ilike.%${escaped}%,first_name.ilike.%${escaped}%,email.ilike.%${escaped}%`
-      );
-    }
-    const { data, error } = await query.order(listState.sortColumn, { ascending: listState.sortAsc, nullsFirst: false });
-    if (error) throw error;
-
-    const csv  = recordsToCsv(data || []);
-    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' }); // BOM付きでExcel文字化け対策
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    const stamp = new Date().toISOString().slice(0, 10);
-    a.href = url;
-    a.download = `document_requests_${stamp}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  } catch (err) {
-    console.error('[admin] CSV出力エラー:', err);
-    alert('CSVの出力に失敗しました。しばらく時間をおいて再度お試しください。');
-  } finally {
-    exportCsvBtn.disabled = false;
-    exportCsvBtn.textContent = 'CSVダウンロード';
-  }
-}
-
 function bindListControls() {
   let searchDebounceId = null;
   searchInput?.addEventListener('input', () => {
@@ -784,7 +749,6 @@ const csvToDateEl          = document.getElementById('csvToDate');
 const csvSalesRepEl        = document.getElementById('csvSalesRep');
 const csvStatusBoxesEl     = document.getElementById('csvStatusCheckboxes');
 const closeCsvFilterBtn    = document.getElementById('closeCsvFilterBtn');
-const closeCsvFilterBtn2   = document.getElementById('closeCsvFilterBtn2');
 const executeCsvBtn        = document.getElementById('executeCsvBtn');
 
 function populateCsvSalesRepOptions() {
@@ -876,8 +840,7 @@ function handleDownloadTemplateCsv() {
 
 function bindCsvFilter() {
   exportCsvBtn?.addEventListener('click', openCsvFilterModal);
-  closeCsvFilterBtn?.addEventListener('click',  closeCsvFilterModal);
-  closeCsvFilterBtn2?.addEventListener('click', closeCsvFilterModal);
+  closeCsvFilterBtn?.addEventListener('click', closeCsvFilterModal);
   executeCsvBtn?.addEventListener('click', handleExecuteCsv);
   csvFilterModal?.addEventListener('click', (e) => {
     if (e.target === csvFilterModal) closeCsvFilterModal();
@@ -893,26 +856,8 @@ const kpiWeekEl        = document.getElementById('kpiWeek');
 const kpiMonthEl       = document.getElementById('kpiMonth');
 const dashboardErrorEl = document.getElementById('dashboardError');
 
-const ACTIVE_STATUSES  = ['lead', 'approach', 'considering'];
 const charts           = {}; // canvasId -> Chart.js instance
 const statusChartIds   = []; // 動的生成した対応状況チャートのID追跡用
-
-// グラフの縦軸は表示幅が限られるため、フォーム表示用の長いラベルではなく短縮版を使う
-const CHART_PERIOD_LABELS = {
-  '2026_autumn': '健康博2026・秋',
-  '2027_spring': '健康博2027・春',
-  'undecided':   '未定',
-};
-
-const CHART_AREA_LABELS = {
-  'food_supplement':       '健康食品＆サプリメント',
-  'organic_natural':       'オーガニック＆ナチュラル',
-  'beauty_wellness':       'ビューティー＆ウェルネス',
-  'body_mind_recovery':    'ボディ＆マインドリカバリー',
-  'health_beauty_factory': '健康＆美容ファクトリー',
-  'age_tech_lab':          'AGE-TECH Lab.',
-  'undecided':             '未定',
-};
 
 function destroyChart(canvasId) {
   charts[canvasId]?.destroy();
@@ -926,32 +871,6 @@ function toDateKey(iso) {
   const tzOffsetMs = d.getTimezoneOffset() * 60000;
   return new Date(d.getTime() - tzOffsetMs).toISOString().slice(0, 10);
 }
-
-function buildTrendData(records) {
-  const endDate = dashboardFilters.toDate
-    ? new Date(dashboardFilters.toDate + 'T23:59:59')
-    : new Date();
-  const startDate = dashboardFilters.fromDate
-    ? new Date(dashboardFilters.fromDate)
-    : (() => { const d = new Date(endDate); d.setDate(d.getDate() - 29); return d; })();
-
-  const counts = new Map();
-  const cur = new Date(startDate);
-  const endKey = toDateKey(endDate.toISOString());
-  while (toDateKey(cur.toISOString()) <= endKey) {
-    counts.set(toDateKey(cur.toISOString()), 0);
-    cur.setDate(cur.getDate() + 1);
-  }
-  records.forEach(r => {
-    const key = toDateKey(r.submitted_at);
-    if (key && counts.has(key)) counts.set(key, counts.get(key) + 1);
-  });
-  return {
-    labels: Array.from(counts.keys()).map(k => k.slice(5).replace('-', '/')),
-    values: Array.from(counts.values()),
-  };
-}
-
 
 function renderStatusChart(records) {
   let filtered = records;
@@ -985,7 +904,6 @@ function renderStatusChart(records) {
   groups.forEach(({ label, recs }, idx) => {
     const counts = STATUS_ORDER.map(key => recs.filter(r => r.status === key).length);
     const total  = counts.reduce((a, b) => a + b, 0);
-    const active = recs.filter(r => ACTIVE_STATUSES.includes(r.status)).length;
     const canvasId = `statusChart_${idx}`;
     statusChartIds.push(canvasId);
 
@@ -1049,39 +967,6 @@ function renderStatusChart(records) {
   });
 }
 
-
-function renderMultiChoiceChart(canvasId, records, field, labelsMap) {
-  const keys   = Object.keys(labelsMap);
-  const counts = keys.map(key => records.filter(r => (r[field] || []).includes(key)).length);
-  destroyChart(canvasId);
-  charts[canvasId] = new Chart(document.getElementById(canvasId), {
-    type: 'bar',
-    data: {
-      labels: keys.map(k => labelsMap[k]),
-      datasets: [{ label: '件数', data: counts, backgroundColor: '#1565c0' }],
-    },
-    options: {
-      indexAxis: 'y',
-      maintainAspectRatio: false,
-      scales: {
-        x: { beginAtZero: true, ticks: { precision: 0 } },
-        y: {
-          // 長い日本語ラベルがチャート幅を超えて見切れないよう、
-          // 描画前にラベル自体を短縮する（フルテキストはtooltipで表示）
-          ticks: {
-            callback: function (value) {
-              const label = this.getLabelForValue(value);
-              const maxLabelWidth = this.chart.width * 0.38;
-              const maxChars = Math.max(4, Math.floor(maxLabelWidth / 13));
-              return label.length > maxChars ? `${label.slice(0, maxChars - 1)}…` : label;
-            },
-          },
-        },
-      },
-      plugins: { legend: { display: false } },
-    },
-  });
-}
 
 function renderKpis(records) {
   const todayKey  = toDateKey(new Date().toISOString());
