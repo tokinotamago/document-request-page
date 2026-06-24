@@ -17,11 +17,9 @@
   --c-required:    #d32f2f;
   --c-divider:     #e8e8e8;
 
-  --shadow-sm: 0 1px 4px rgba(0,0,0,0.06);
   --shadow-md: 0 2px 10px rgba(0,0,0,0.08);
 
   --radius-sm: 4px;
-  --radius-md: 8px;
   --radius-lg: 12px;
 
   --font: "Noto Sans JP", -apple-system, BlinkMacSystemFont, "Segoe UI", "Yu Gothic UI", "Yu Gothic",
@@ -48,30 +46,9 @@ body {
    Hero
    ============================================================ */
 .site-hero {
-  position: relative;
-  min-height: 277px;
-  display: flex;
-  align-items: flex-end;
+  min-height: 200px;
   overflow: hidden;
-  background:
-    /* テキスト可読性オーバーレイ — 下部を濃くして文字を読みやすく */
-    linear-gradient(to top, rgba(0,8,20,0.72) 0%, rgba(0,8,20,0.28) 45%, rgba(0,8,20,0.05) 100%),
-    /* ブランドカラー（#002244）薄掛け */
-    linear-gradient(158deg, rgba(0,34,68,0.25) 0%, rgba(0,34,68,0.08) 100%),
-    /* 展示会写真 */
-    url('document-request-page-top.jpg') center 35% / cover no-repeat;
-}
-
-/* 展示会場の格子天井・床を表現するグリッドオーバーレイ */
-.site-hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
-  background-size: 48px 48px;
-  pointer-events: none;
+  background: url('document-request-page-top.jpg') center calc(35% - 90px) / cover no-repeat;
 }
 
 /* ============================================================
@@ -93,12 +70,22 @@ body {
 }
 
 /* ============================================================
+   Page lead  (h1直下のキャッチコピー)
+   ============================================================ */
+.page-lead {
+  font-size: 14px;
+  color: var(--c-text-sub);
+  line-height: 1.85;
+  margin-bottom: 8px;
+}
+
+/* ============================================================
    Form lead  (※マーク説明)
    ============================================================ */
 .form-lead {
   font-size: 13px;
   color: var(--c-text-sub);
-  margin-bottom: 28px;
+  margin-bottom: 32px;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -117,29 +104,30 @@ body {
 }
 
 /* ============================================================
-   Form Sections  （カードなし・フラット）
+   Form Sections  （カードなし・フラット、セクション間 16px 空け）
    ============================================================ */
-.form-section {
-  background: transparent;
-  padding: 0 0 28px;
-}
-
-.form-section + .form-section {
-  border-top: none;
-}
+.form-section + .form-section { margin-top: 16px; }
 
 /* ============================================================
-   Form Groups
+   Form Groups  — ラベル左・入力右の横並びレイアウト
    ============================================================ */
-.form-group { margin-bottom: 24px; }
-.form-group:last-child { margin-bottom: 0; }
+.form-group {
+  display: grid;
+  grid-template-columns: 170px 1fr;
+  gap: 0 16px;
+  align-items: start;
+  margin-bottom: 12px;
+  padding-bottom: 16px;
+}
+
+/* ラベル以外の直接子要素はすべて右列に積む */
+.form-group > *:not(.form-label) { grid-column: 2; }
 
 .form-label {
-  display: block;
+  padding-top: 10px;
   font-size: 13px;
   font-weight: 700;
   color: var(--c-text);
-  margin-bottom: 8px;
   line-height: 1.5;
 }
 
@@ -318,7 +306,7 @@ body {
    ============================================================ */
 .privacy-section {
   border-top: 1px solid var(--c-divider);
-  padding: 28px 0 4px;
+  padding: 16px 0 4px;
   margin-bottom: 12px;
 }
 
@@ -336,7 +324,6 @@ body {
   font-size: 11.5px;
   color: var(--c-error);
   margin-top: 4px;
-  min-height: 16px;
   line-height: 1.4;
 }
 
@@ -391,6 +378,10 @@ body {
 .btn-submit__arrow { transition: transform var(--tr); }
 .btn-submit:hover .btn-submit__arrow { transform: translateX(3px); }
 
+/* 最終送信ボタン — 信頼感を与えるフォレストグリーン */
+#finalSubmitBtn              { background: #2d6a4f; }
+#finalSubmitBtn:hover        { background: #1e5038; }
+
 /* ============================================================
    Confirmation page
    ============================================================ */
@@ -420,7 +411,6 @@ body {
 
 /* 確認ブロック（カードなし・フラット） */
 .confirm-block {
-  background: transparent;
   padding: 24px 0;
 }
 
@@ -544,11 +534,13 @@ body {
    Responsive
    ============================================================ */
 @media (max-width: 600px) {
-  .site-hero  { min-height: 208px; }
+  .site-hero  { min-height: 140px; }
 
   .main-content { padding: 32px 20px 80px; }
 
-  .form-section { padding: 24px 0 20px; }
+  /* 横並びレイアウトを縦積みに戻す */
+  .form-group { display: block; }
+  .form-label { padding-top: 0; margin-bottom: 8px; }
 
   .input-row { grid-template-columns: 1fr; gap: 8px; }
 
