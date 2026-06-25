@@ -1,7 +1,18 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
 
-const NOTIFY_TO   = "sanonoriaki@gmail.com"; // テスト用。本番はドメイン認証後に noriaki.sano@informa.com へ変更
-const NOTIFY_FROM = "no-reply@resend.dev"; // 本番ドメイン取得後に変更
+const NOTIFY_TO   = Deno.env.get("NOTIFY_TO")   ?? "";
+const NOTIFY_FROM = Deno.env.get("NOTIFY_FROM") ?? "no-reply@resend.dev";
+
+// タイミング攻撃を防ぐ定数時間文字列比較（XOR）
+function safeEqual(a: string, b: string): boolean {
+  const enc  = new TextEncoder();
+  const aBytes = enc.encode(a);
+  const bBytes = enc.encode(b);
+  if (aBytes.length !== bBytes.length) return false;
+  let diff = 0;
+  for (let i = 0; i < aBytes.length; i++) diff |= aBytes[i] ^ bBytes[i];
+  return diff === 0;
+}
 
 const PERIOD_LABELS: Record<string, string> = {
   "2026_autumn": "健康博覧会2026・秋　9月30日（水）〜10月2日（金）",
@@ -83,6 +94,18 @@ function buildHtml(r: Record<string, unknown>): string {
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
     return new Response("Method Not Allowed", { status: 405 });
+  }
+
+  // Webhook 送信元が正規の Supabase Database Webhook であることを検証する。
+  // Dashboard の Webhook 設定で x-webhook-secret ヘッダーに WEBHOOK_SECRET の値を設定すること。
+  const webhookSecret = Deno.env.get("WEBHOOK_SECRET");
+  if (!webhookSecret) {
+    console.error("WEBHOOK_SECRET is not set");
+    return new Response("Server misconfiguration", { status: 500 });
+  }
+  const incoming = req.headers.get("x-webhook-secret") ?? "";
+  if (!safeEqual(incoming, webhookSecret)) {
+    return new Response("Unauthorized", { status: 401 });
   }
 
   const payload = await req.json();
