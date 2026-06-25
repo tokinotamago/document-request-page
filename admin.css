@@ -574,17 +574,12 @@
 .kpi-card {
   background: #f8f9fb;
   border: 1px solid var(--c-divider);
-  border-left: 4px solid var(--c-divider); /* 個別上書きで色付け */
   border-radius: var(--radius-md);
   padding: 18px 20px;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
-.kpi-card:nth-child(1) { border-left-color: #1976d2; }
-.kpi-card:nth-child(2) { border-left-color: #0288d1; }
-.kpi-card:nth-child(3) { border-left-color: #00897b; }
-.kpi-card:nth-child(4) { border-left-color: var(--c-accent); }
 
 .kpi-label {
   font-size: 13px;

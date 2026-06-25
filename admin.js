@@ -1004,19 +1004,32 @@ function renderStatusChart(records) {
 
 
 function renderKpis(records) {
-  const todayKey  = toDateKey(new Date().toISOString());
-  const now       = new Date();
+  const now            = new Date();
+  const todayKey       = toDateKey(now.toISOString());
   const daysFromMonday = now.getDay() === 0 ? 6 : now.getDay() - 1;
-  const monday    = new Date(now);
+  const monday         = new Date(now);
   monday.setDate(now.getDate() - daysFromMonday);
-  const weekStart = toDateKey(monday.toISOString());
+  const sunday         = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  const weekStart      = toDateKey(monday.toISOString());
 
-  const monthStartKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+  const monthStartKey  = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
 
   // 今年度: 4月以降なら今年4/1〜翌年3/31、1〜3月なら前年4/1〜今年3/31
   const fiscalStartYear = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
   const fiscalStartKey  = `${fiscalStartYear}-04-01`;
   const fiscalEndKey    = `${fiscalStartYear + 1}-03-31`;
+
+  // ラベルに日付範囲を表示
+  const md  = d => `${d.getMonth() + 1}/${d.getDate()}`;
+  const labelToday = document.getElementById('kpiTodayLabel');
+  const labelWeek  = document.getElementById('kpiWeekLabel');
+  const labelMonth = document.getElementById('kpiMonthLabel');
+  const labelTotal = document.getElementById('kpiTotalLabel');
+  if (labelToday) labelToday.textContent = `本日（${md(now)}）`;
+  if (labelWeek)  labelWeek.textContent  = `今週（${md(monday)}〜${md(sunday)}）`;
+  if (labelMonth) labelMonth.textContent = `今月（${now.getFullYear()}年${now.getMonth() + 1}月）`;
+  if (labelTotal) labelTotal.textContent = `今年度（${fiscalStartYear}年度）`;
 
   const todayCount  = records.filter(r => toDateKey(r.submitted_at) === todayKey).length;
   const weekCount   = records.filter(r => {
@@ -1032,10 +1045,10 @@ function renderKpis(records) {
     return key && key >= fiscalStartKey && key <= fiscalEndKey;
   }).length;
 
-  kpiTotalEl.textContent = `${fiscalCount}件`;
   kpiTodayEl.textContent = `${todayCount}件`;
   kpiWeekEl.textContent  = `${weekCount}件`;
   kpiMonthEl.textContent = `${monthCount}件`;
+  kpiTotalEl.textContent = `${fiscalCount}件`;
 }
 
 async function fetchAndRenderDashboard() {
