@@ -104,8 +104,15 @@
       <section id="panel-list" class="admin-panel" role="tabpanel" hidden>
 
         <div class="list-toolbar">
-          <input type="search" id="searchInput" class="form-input list-search"
-                 placeholder="貴社名・担当者名・メールアドレスで検索">
+          <div class="search-wrap">
+            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="search" id="searchInput" class="form-input list-search"
+                   placeholder="貴社名・担当者名・メールアドレスで検索">
+            <button type="button" id="clearSearchBtn" class="search-clear" hidden aria-label="検索をクリア">&times;</button>
+          </div>
           <div class="list-toolbar__right">
             <span id="listCount" class="list-count"></span>
             <button type="button" id="importCsvBtn" class="btn-back">CSVインポート</button>
@@ -183,10 +190,12 @@
       </div>
       <div id="detailModalBody" class="modal-body"></div>
       <div class="modal-footer modal-footer--detail">
-        <button type="button" id="cancelEditBtn" class="btn-back modal-save-btn" hidden>キャンセル</button>
-        <button type="button" id="editRequestBtn" class="btn-back">編集</button>
-        <button type="button" id="deleteRequestBtn" class="btn-back btn-danger">この資料請求を削除</button>
-        <button type="button" id="saveRequestBtn" class="btn-submit modal-save-btn" hidden>修正を保存</button>
+        <button type="button" id="deleteRequestBtn" class="btn-back btn-danger">削除</button>
+        <div class="modal-footer__actions">
+          <button type="button" id="cancelEditBtn" class="btn-back modal-save-btn" hidden>キャンセル</button>
+          <button type="button" id="editRequestBtn" class="btn-back">編集</button>
+          <button type="button" id="saveRequestBtn" class="btn-submit modal-save-btn" hidden>修正を保存</button>
+        </div>
       </div>
     </div>
   </div>
@@ -264,6 +273,8 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.js"
           integrity="sha384-H7mijd3g+6+ErEI7+6rhqxGY03fYwsEaekVnHMC7HHB7u2rIkEf6AQgIXZqQYzDS"
           crossorigin="anonymous"></script>
+  <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
   <script src="shared.js" defer></script>
   <script src="admin.js" defer></script>
 </body>

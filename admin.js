@@ -154,6 +154,7 @@ const listState = {
 };
 
 const searchInput          = document.getElementById('searchInput');
+const clearSearchBtn       = document.getElementById('clearSearchBtn');
 const listCountEl          = document.getElementById('listCount');
 const requestsTableBody    = document.getElementById('requestsTableBody');
 const listEmptyEl          = document.getElementById('listEmpty');
@@ -258,9 +259,40 @@ function updatePaginationUI(total) {
   listCountEl.textContent = `全${total}件`;
 }
 
+// ================================================================
+// トースト通知
+// ================================================================
+let toastTimeoutId = null;
+
+function showToast(message, type = 'success') {
+  const el = document.getElementById('toast');
+  if (!el) return;
+  clearTimeout(toastTimeoutId);
+  el.textContent = message;
+  el.className = `toast toast--${type} is-visible`;
+  toastTimeoutId = setTimeout(() => el.classList.remove('is-visible'), 3000);
+}
+
+// ================================================================
+// スケルトンローダー
+// ================================================================
+function renderSkeletonRows(count = 6) {
+  requestsTableBody.innerHTML = Array.from({ length: count }, () =>
+    `<tr class="skeleton-row">
+      <td><span class="skeleton-cell skeleton-cell--short"></span></td>
+      <td><span class="skeleton-cell skeleton-cell--short"></span></td>
+      <td><span class="skeleton-cell"></span></td>
+      <td><span class="skeleton-cell"></span></td>
+      <td><span class="skeleton-cell skeleton-cell--icon"></span></td>
+      <td><span class="skeleton-cell skeleton-cell--icon"></span></td>
+    </tr>`
+  ).join('');
+}
+
 async function fetchAndRenderList() {
   listErrorEl.hidden = true;
   listEmptyEl.hidden = true;
+  renderSkeletonRows();
 
   try {
     const { data, error, count } = await buildListQuery();
@@ -335,12 +367,21 @@ function recordsToCsv(records) {
 function bindListControls() {
   let searchDebounceId = null;
   searchInput?.addEventListener('input', () => {
+    if (clearSearchBtn) clearSearchBtn.hidden = !searchInput.value;
     clearTimeout(searchDebounceId);
     searchDebounceId = setTimeout(() => {
       listState.searchQuery = searchInput.value;
       listState.page = 0;
       fetchAndRenderList();
     }, 300);
+  });
+  clearSearchBtn?.addEventListener('click', () => {
+    searchInput.value = '';
+    clearSearchBtn.hidden = true;
+    listState.searchQuery = '';
+    listState.page = 0;
+    fetchAndRenderList();
+    searchInput.focus();
   });
 
   salesRepFilterSelect?.addEventListener('change', () => {
@@ -446,7 +487,6 @@ function openDetailModal(record) {
   currentDetailId     = record.id;
   currentDetailRecord = record;
   isEditMode          = false;
-  detailStatusSaved.textContent = '';
   detailModalTitle.textContent = `${record.company_name} 様`;
   setDetailModalStatus(record.status);
   detailModalBody.innerHTML = buildRequestDetailHtml(record);
@@ -467,7 +507,6 @@ async function handleStatusChange() {
   const newStatus = detailStatusSelect.value;
 
   detailStatusSelect.disabled = true;
-  detailStatusSaved.textContent = '';
   try {
     const { error } = await supabaseClient
       .from(DB_TABLE)
@@ -476,11 +515,11 @@ async function handleStatusChange() {
     if (error) throw error;
 
     detailStatusSelect.dataset.status = newStatus;
-    detailStatusSaved.textContent = '保存しました';
     if (currentDetailRecord) currentDetailRecord.status = newStatus;
+    showToast('対応状況を保存しました');
   } catch (err) {
     console.error('[admin] 対応状況の更新エラー:', err);
-    detailStatusSaved.textContent = '保存に失敗しました';
+    showToast('保存に失敗しました', 'error');
   } finally {
     detailStatusSelect.disabled = false;
   }
@@ -601,11 +640,10 @@ async function handleSaveEdit() {
     setDetailModalStatus(data.status);
     exitEditMode();
     fetchAndRenderList();
-    detailStatusSaved.textContent = '修正内容を保存しました';
-    setTimeout(() => { detailStatusSaved.textContent = ''; }, 3000);
+    showToast('修正内容を保存しました');
   } catch (err) {
     console.error('[admin] 編集保存エラー:', err);
-    alert('保存に失敗しました。しばらく時間をおいて再度お試しください。');
+    showToast('保存に失敗しました', 'error');
   } finally {
     saveRequestBtn.disabled    = false;
     saveRequestBtn.textContent = '修正を保存';
@@ -640,8 +678,7 @@ async function handleTableSelectChange(e) {
     }
   } catch (err) {
     console.error('[admin] 一覧更新エラー:', err);
-    const detail = err?.message ? `\n詳細: ${err.message}` : '';
-    alert(`更新に失敗しました。しばらく時間をおいて再度お試しください。${detail}`);
+    showToast('更新に失敗しました', 'error');
     fetchAndRenderList();
   } finally {
     if (select.isConnected) select.disabled = false;
@@ -664,7 +701,7 @@ async function handleRowClick(e) {
     openDetailModal(data);
   } catch (err) {
     console.error('[admin] 詳細取得エラー:', err);
-    alert('詳細の取得に失敗しました。しばらく時間をおいて再度お試しください。');
+    showToast('詳細の取得に失敗しました', 'error');
   }
 }
 
@@ -683,12 +720,12 @@ async function handleDeleteRequest() {
       .eq('id', currentDetailId);
     if (error) throw error;
 
-    requestsTableBody.querySelector(`tr[data-id="${currentDetailId}"]`)?.remove();
     closeDetailModal();
-    fetchAndRenderList(); // 件数・ページネーションを最新化
+    fetchAndRenderList();
+    showToast('削除しました');
   } catch (err) {
     console.error('[admin] 削除エラー:', err);
-    alert('削除に失敗しました。しばらく時間をおいて再度お試しください。');
+    showToast('削除に失敗しました', 'error');
   } finally {
     deleteRequestBtn.disabled = false;
   }
@@ -701,10 +738,8 @@ let memoDebounceId = null;
 
 async function handleMemoInput(e) {
   const textarea = e.target;
-  const memoSavedMsg = document.getElementById('memoSavedMsg');
-  if (!currentDetailId || !memoSavedMsg) return;
+  if (!currentDetailId) return;
 
-  if (memoSavedMsg) memoSavedMsg.textContent = '';
   clearTimeout(memoDebounceId);
   memoDebounceId = setTimeout(async () => {
     const memo = textarea.value;
@@ -715,11 +750,10 @@ async function handleMemoInput(e) {
         .eq('id', currentDetailId);
       if (error) throw error;
       if (currentDetailRecord) currentDetailRecord.memo = memo;
-      memoSavedMsg.textContent = '保存しました';
-      setTimeout(() => { memoSavedMsg.textContent = ''; }, 2000);
+      showToast('メモを保存しました');
     } catch (err) {
       console.error('[admin] メモ保存エラー:', err);
-      memoSavedMsg.textContent = '保存に失敗しました';
+      showToast('メモの保存に失敗しました', 'error');
     }
   }, 800);
 }
@@ -819,7 +853,7 @@ async function handleExecuteCsv() {
     URL.revokeObjectURL(url);
   } catch (err) {
     console.error('[admin] CSV出力エラー:', err);
-    alert('CSVの出力に失敗しました。しばらく時間をおいて再度お試しください。');
+    showToast('CSVの出力に失敗しました', 'error');
   } finally {
     exportCsvBtn.disabled    = false;
     exportCsvBtn.textContent = 'CSVダウンロード';
@@ -1167,13 +1201,13 @@ function closeCsvImportModal() { csvImportModal.hidden = true; }
 
 function handleCsvFileSelected(file) {
   if (!file || !file.name.toLowerCase().endsWith('.csv')) {
-    alert('CSVファイルを選択してください。');
+    showToast('CSVファイルを選択してください', 'error');
     return;
   }
   const reader = new FileReader();
   reader.onload = (e) => {
     const rows = parseCsvText(e.target.result);
-    if (rows.length < 2) { alert('CSVにデータが含まれていません。'); return; }
+    if (rows.length < 2) { showToast('CSVにデータが含まれていません', 'error'); return; }
     const headers = rows[0];
     importParsedRecords = rows.slice(1).map(row => csvRowToRecord(headers, row));
     csvImportPreviewInfo.textContent = `${importParsedRecords.length} 件のデータを読み込みました（先頭5件プレビュー）`;
@@ -1261,6 +1295,7 @@ async function handleAddSalesRep() {
     input.value = '';
     renderSalesRepSettingsList();
     refreshRepDropdowns();
+    showToast(`「${data.name}」を追加しました`);
   } catch (err) {
     errorEl.textContent = err?.code === '23505'
       ? 'その名前はすでに登録されています。'
@@ -1282,9 +1317,10 @@ async function handleDeleteSalesRep(id, name) {
     salesRepsData = salesRepsData.filter(r => r.id !== id);
     renderSalesRepSettingsList();
     refreshRepDropdowns();
+    showToast(`「${name}」を削除しました`);
   } catch (err) {
-    alert('削除に失敗しました。');
     console.error('[admin] 担当者削除エラー:', err);
+    showToast('削除に失敗しました', 'error');
   }
 }
 
