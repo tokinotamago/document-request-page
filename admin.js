@@ -166,6 +166,7 @@ const sortableHeaders      = document.querySelectorAll('#requestsTable th[data-s
 const salesRepFilterSelect = document.getElementById('salesRepFilterSelect');
 const statusFilterSelect   = document.getElementById('statusFilterSelect');
 const resetListFilterBtn   = document.getElementById('resetListFilterBtn');
+const toastEl              = document.getElementById('toast');
 
 function populateListFilterControls() {
   if (salesRepFilterSelect) {
@@ -265,20 +266,19 @@ function updatePaginationUI(total) {
 let toastTimeoutId = null;
 
 function showToast(message, type = 'success') {
-  const el = document.getElementById('toast');
-  if (!el) return;
+  if (!toastEl) return;
   clearTimeout(toastTimeoutId);
-  el.textContent = message;
-  el.className = `toast toast--${type} is-visible`;
-  toastTimeoutId = setTimeout(() => el.classList.remove('is-visible'), 3000);
+  toastEl.textContent = message;
+  toastEl.className = 'toast';
+  toastEl.classList.add(`toast--${type}`, 'is-visible');
+  toastTimeoutId = setTimeout(() => toastEl.classList.remove('is-visible'), 3000);
 }
 
 // ================================================================
 // スケルトンローダー
 // ================================================================
-function renderSkeletonRows(count = 6) {
-  requestsTableBody.innerHTML = Array.from({ length: count }, () =>
-    `<tr class="skeleton-row">
+const SKELETON_ROW_HTML = Array(6).fill(
+  `<tr class="skeleton-row">
       <td><span class="skeleton-cell skeleton-cell--short"></span></td>
       <td><span class="skeleton-cell skeleton-cell--short"></span></td>
       <td><span class="skeleton-cell"></span></td>
@@ -286,7 +286,10 @@ function renderSkeletonRows(count = 6) {
       <td><span class="skeleton-cell skeleton-cell--icon"></span></td>
       <td><span class="skeleton-cell skeleton-cell--icon"></span></td>
     </tr>`
-  ).join('');
+).join('');
+
+function renderSkeletonRows() {
+  requestsTableBody.innerHTML = SKELETON_ROW_HTML;
 }
 
 async function fetchAndRenderList() {
@@ -885,11 +888,15 @@ function bindCsvFilter() {
 // ================================================================
 // ダッシュボード
 // ================================================================
-const kpiTotalEl       = document.getElementById('kpiTotal');
-const kpiTodayEl       = document.getElementById('kpiToday');
-const kpiWeekEl        = document.getElementById('kpiWeek');
-const kpiMonthEl       = document.getElementById('kpiMonth');
-const dashboardErrorEl = document.getElementById('dashboardError');
+const kpiTotalEl        = document.getElementById('kpiTotal');
+const kpiTodayEl        = document.getElementById('kpiToday');
+const kpiWeekEl         = document.getElementById('kpiWeek');
+const kpiMonthEl        = document.getElementById('kpiMonth');
+const kpiTodayLabelEl   = document.getElementById('kpiTodayLabel');
+const kpiWeekLabelEl    = document.getElementById('kpiWeekLabel');
+const kpiMonthLabelEl   = document.getElementById('kpiMonthLabel');
+const kpiTotalLabelEl   = document.getElementById('kpiTotalLabel');
+const dashboardErrorEl  = document.getElementById('dashboardError');
 
 const charts           = {}; // canvasId -> Chart.js instance
 const statusChartIds   = []; // 動的生成した対応状況チャートのID追跡用
@@ -1021,16 +1028,13 @@ function renderKpis(records) {
   const fiscalEndKey    = `${fiscalStartYear + 1}-03-31`;
 
   // ラベルに日付範囲を表示
-  const md        = d => `${d.getMonth() + 1}/${d.getDate()}`;
-  const monthLast = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-  const labelToday = document.getElementById('kpiTodayLabel');
-  const labelWeek  = document.getElementById('kpiWeekLabel');
-  const labelMonth = document.getElementById('kpiMonthLabel');
-  const labelTotal = document.getElementById('kpiTotalLabel');
-  if (labelToday) labelToday.textContent = `本日（${md(now)}）`;
-  if (labelWeek)  labelWeek.textContent  = `今週（${md(monday)}〜${md(sunday)}）`;
-  if (labelMonth) labelMonth.textContent = `今月（${md(new Date(now.getFullYear(), now.getMonth(), 1))}〜${md(monthLast)}）`;
-  if (labelTotal) labelTotal.textContent = `今年度（4/1〜3/31）`;
+  const md         = d => `${d.getMonth() + 1}/${d.getDate()}`;
+  const monthFirst = new Date(now.getFullYear(), now.getMonth(), 1);
+  const monthLast  = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  if (kpiTodayLabelEl) kpiTodayLabelEl.textContent = `本日（${md(now)}）`;
+  if (kpiWeekLabelEl)  kpiWeekLabelEl.textContent  = `今週（${md(monday)}〜${md(sunday)}）`;
+  if (kpiMonthLabelEl) kpiMonthLabelEl.textContent = `今月（${md(monthFirst)}〜${md(monthLast)}）`;
+  if (kpiTotalLabelEl) kpiTotalLabelEl.textContent = `今年度（4/1〜3/31）`;
 
   const todayCount  = records.filter(r => toDateKey(r.submitted_at) === todayKey).length;
   const weekCount   = records.filter(r => {
