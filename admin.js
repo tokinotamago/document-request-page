@@ -187,18 +187,23 @@ function populateListFilterControls() {
   }
 }
 
+// PostgREST の .or() に直接埋め込む文字列から、フィルター文法上の特殊文字を除去する
+function applySearchFilter(query, rawQ) {
+  const q = rawQ.trim();
+  if (!q) return query;
+  const escaped = q.replace(/[%,.()*[\]]/g, '').slice(0, 100);
+  if (!escaped) return query;
+  return query.or(
+    `company_name.ilike.%${escaped}%,last_name.ilike.%${escaped}%,first_name.ilike.%${escaped}%,email.ilike.%${escaped}%`
+  );
+}
+
 function buildListQuery() {
   let query = supabaseClient
     .from(DB_TABLE)
     .select('*', { count: 'exact' });
 
-  const q = listState.searchQuery.trim();
-  if (q) {
-    const escaped = q.replace(/[%,]/g, ''); // PostgREST or式の区切り文字を除去
-    query = query.or(
-      `company_name.ilike.%${escaped}%,last_name.ilike.%${escaped}%,first_name.ilike.%${escaped}%,email.ilike.%${escaped}%`
-    );
-  }
+  query = applySearchFilter(query, listState.searchQuery);
 
   if (listState.salesRepFilter) {
     query = query.eq('sales_rep', listState.salesRepFilter);
@@ -789,14 +794,10 @@ async function handleExecuteCsv() {
   exportCsvBtn.disabled    = true;
   exportCsvBtn.textContent = '出力中...';
   try {
-    let query = supabaseClient.from(DB_TABLE).select('*');
-    const q = listState.searchQuery.trim();
-    if (q) {
-      const escaped = q.replace(/[%,]/g, '');
-      query = query.or(
-        `company_name.ilike.%${escaped}%,last_name.ilike.%${escaped}%,first_name.ilike.%${escaped}%,email.ilike.%${escaped}%`
-      );
-    }
+    let query = applySearchFilter(
+      supabaseClient.from(DB_TABLE).select('*'),
+      listState.searchQuery
+    );
     if (fromDate) query = query.gte('submitted_at', fromDate + 'T00:00:00+09:00');
     if (toDate)   query = query.lte('submitted_at', toDate   + 'T23:59:59.999+09:00');
     if (salesRep) query = query.eq('sales_rep', salesRep);
@@ -1006,7 +1007,10 @@ function renderKpis(records) {
 async function fetchAndRenderDashboard() {
   dashboardErrorEl.hidden = true;
   try {
-    const { data, error } = await supabaseClient.from(DB_TABLE).select('*');
+    const { data, error } = await supabaseClient
+      .from(DB_TABLE)
+      .select('submitted_at, status, sales_rep')
+      .limit(5000);
     if (error) throw error;
     cachedDashboardRecords = data || [];
 
