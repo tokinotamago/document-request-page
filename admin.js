@@ -1021,15 +1021,16 @@ function renderKpis(records) {
   const fiscalEndKey    = `${fiscalStartYear + 1}-03-31`;
 
   // ラベルに日付範囲を表示
-  const md  = d => `${d.getMonth() + 1}/${d.getDate()}`;
+  const md        = d => `${d.getMonth() + 1}/${d.getDate()}`;
+  const monthLast = new Date(now.getFullYear(), now.getMonth() + 1, 0);
   const labelToday = document.getElementById('kpiTodayLabel');
   const labelWeek  = document.getElementById('kpiWeekLabel');
   const labelMonth = document.getElementById('kpiMonthLabel');
   const labelTotal = document.getElementById('kpiTotalLabel');
   if (labelToday) labelToday.textContent = `本日（${md(now)}）`;
   if (labelWeek)  labelWeek.textContent  = `今週（${md(monday)}〜${md(sunday)}）`;
-  if (labelMonth) labelMonth.textContent = `今月（${now.getFullYear()}年${now.getMonth() + 1}月）`;
-  if (labelTotal) labelTotal.textContent = `今年度（${fiscalStartYear}年度）`;
+  if (labelMonth) labelMonth.textContent = `今月（${md(new Date(now.getFullYear(), now.getMonth(), 1))}〜${md(monthLast)}）`;
+  if (labelTotal) labelTotal.textContent = `今年度（4/1〜3/31）`;
 
   const todayCount  = records.filter(r => toDateKey(r.submitted_at) === todayKey).length;
   const weekCount   = records.filter(r => {
