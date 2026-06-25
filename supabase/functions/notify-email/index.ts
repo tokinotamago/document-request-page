@@ -19,9 +19,18 @@ const AREA_LABELS: Record<string, string> = {
   "undecided":             "未定",
 };
 
+function esc(s: unknown): string {
+  if (s === null || s === undefined || s === "") return "—";
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 function labelize(values: string[], map: Record<string, string>): string {
   if (!values || values.length === 0) return "—";
-  return values.map(v => map[v] ?? v).join("、");
+  return values.map(v => esc(map[v] ?? v)).join("、");
 }
 
 function buildHtml(r: Record<string, unknown>): string {
@@ -38,8 +47,12 @@ function buildHtml(r: Record<string, unknown>): string {
   const areas   = labelize(r.exhibit_areas   as string[], AREA_LABELS);
 
   const row = (label: string, value: unknown) =>
-    `<tr><th style="text-align:left;padding:6px 12px;background:#f5f5f5;white-space:nowrap;border:1px solid #ddd">${label}</th>` +
-    `<td style="padding:6px 12px;border:1px solid #ddd">${value ?? "—"}</td></tr>`;
+    `<tr><th style="text-align:left;padding:6px 12px;background:#f5f5f5;white-space:nowrap;border:1px solid #ddd">${esc(label)}</th>` +
+    `<td style="padding:6px 12px;border:1px solid #ddd">${esc(value)}</td></tr>`;
+
+  const rowHtml = (label: string, html: string) =>
+    `<tr><th style="text-align:left;padding:6px 12px;background:#f5f5f5;white-space:nowrap;border:1px solid #ddd">${esc(label)}</th>` +
+    `<td style="padding:6px 12px;border:1px solid #ddd">${html}</td></tr>`;
 
   return `
 <p>資料請求フォームに新しい申込みがありました。</p>
@@ -52,15 +65,15 @@ function buildHtml(r: Record<string, unknown>): string {
   ${row("メールアドレス",     r.email)}
   ${row("電話番号",           r.phone)}
   ${row("住所",               address)}
-  ${row("WEBサイト",          r.website || "—")}
+  ${row("WEBサイト",          r.website)}
   ${row("出展予定製品",       r.exhibit_products)}
-  ${row("出展検討会期",       periods)}
-  ${row("希望エリア",         areas)}
+  ${rowHtml("出展検討会期",   periods)}
+  ${rowHtml("希望エリア",     areas)}
   ${row("創業5年以内",        r.startup_check ? "該当" : "非該当")}
-  ${row("出会いたい業種",     r.target_industry || "—")}
-  ${row("他展示会",           r.other_shows    || "—")}
-  ${row("オンライン商談希望", r.online_meeting  || "—")}
-  ${row("その他",             r.other_notes    || "—")}
+  ${row("出会いたい業種",     r.target_industry)}
+  ${row("他展示会",           r.other_shows)}
+  ${row("オンライン商談希望", r.online_meeting)}
+  ${row("その他",             r.other_notes)}
   ${row("送信日時",           r.submitted_at)}
 </table>
 `;
