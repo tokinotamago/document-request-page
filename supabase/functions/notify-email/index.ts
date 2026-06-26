@@ -1,7 +1,6 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
 
 const NOTIFY_FROM = Deno.env.get("NOTIFY_FROM") ?? "no-reply@resend.dev";
-// NOTIFY_TO は担当者にメールアドレスが設定されていない場合のフォールバック
 const NOTIFY_TO   = Deno.env.get("NOTIFY_TO")   ?? "";
 
 // タイミング攻撃を防ぐ定数時間文字列比較（XOR）
@@ -46,29 +45,27 @@ function labelize(values: string[], map: Record<string, string>): string {
   return values.map(v => esc(map[v] ?? v)).join("、");
 }
 
-// 確認画面と同じ項目・ラベルでメール本文を生成する
-function buildHtml(r: Record<string, unknown>): string {
+const TH  = `style="text-align:left;padding:6px 12px;background:#f5f5f5;white-space:nowrap;border:1px solid #ddd;font-weight:normal;"`;
+const TD  = `style="padding:6px 12px;border:1px solid #ddd"`;
+const SEP = `<tr><td colspan="2" style="padding:0;border:none;height:12px"></td></tr>`;
+
+function row(label: string, value: unknown): string {
+  return `<tr><th ${TH}>${esc(label)}</th><td ${TD}>${esc(value)}</td></tr>`;
+}
+function rowHtml(label: string, html: string): string {
+  return `<tr><th ${TH}>${esc(label)}</th><td ${TD}>${html}</td></tr>`;
+}
+
+// 担当者向け社内通知メール
+function buildNotificationHtml(r: Record<string, unknown>): string {
   const name    = `${r.last_name ?? ""} ${r.first_name ?? ""}`.trim();
   const kana    = `${r.last_name_kana ?? ""} ${r.first_name_kana ?? ""}`.trim();
   const address = [
     r.postal_code ? `〒${String(r.postal_code).replace(/(\d{3})(\d{4})/, "$1-$2")}` : "",
-    r.prefecture,
-    r.address1,
-    r.address2,
+    r.prefecture, r.address1, r.address2,
   ].filter(Boolean).join("　");
-
   const periods = labelize(r.exhibit_periods as string[], PERIOD_LABELS);
   const areas   = labelize(r.exhibit_areas   as string[], AREA_LABELS);
-
-  const th = `style="text-align:left;padding:6px 12px;background:#f5f5f5;white-space:nowrap;border:1px solid #ddd;font-weight:normal;"`;
-  const td = `style="padding:6px 12px;border:1px solid #ddd"`;
-  const sep = `<tr><td colspan="2" style="padding:0;border:none;height:12px"></td></tr>`;
-
-  const row = (label: string, value: unknown) =>
-    `<tr><th ${th}>${esc(label)}</th><td ${td}>${esc(value)}</td></tr>`;
-
-  const rowHtml = (label: string, html: string) =>
-    `<tr><th ${th}>${esc(label)}</th><td ${td}>${html}</td></tr>`;
 
   return `
 <p style="margin:0 0 16px">資料請求フォームに新しい申込みがありました。</p>
@@ -78,17 +75,17 @@ function buildHtml(r: Record<string, unknown>): string {
   ${row("ふりがな", kana)}
   ${row("部署",     r.department)}
   ${row("役職",     r.job_title)}
-  ${sep}
+  ${SEP}
   ${row("メールアドレス",   r.email)}
   ${row("連絡先電話番号",   r.phone)}
   ${row("住所",             address || null)}
   ${row("WEBサイト",        r.website)}
-  ${sep}
+  ${SEP}
   ${row("出展予定製品",           r.exhibit_products)}
   ${rowHtml("出展を検討する会期", periods)}
   ${rowHtml("出展を希望するエリア", areas)}
   ${row("該当（創業5年以内）", r.startup_check ? "創業５年以内" : null)}
-  ${sep}
+  ${SEP}
   ${row("出会いたい業種",               r.target_industry)}
   ${row("本展以外の出展検討中の展示会", r.other_shows)}
   ${row("オンライン商談希望日時",       r.online_meeting)}
@@ -98,28 +95,55 @@ function buildHtml(r: Record<string, unknown>): string {
 `;
 }
 
-// sales_reps テーブルから通知先メールアドレスを取得する
-async function getSalesRepEmails(): Promise<string[]> {
-  const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const serviceKey  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!supabaseUrl || !serviceKey) return [];
+// 請求者向け自動返信メール
+function buildAutoReplyHtml(r: Record<string, unknown>): string {
+  const name    = `${r.last_name ?? ""} ${r.first_name ?? ""}`.trim();
+  const periods = labelize(r.exhibit_periods as string[], PERIOD_LABELS);
+  const areas   = labelize(r.exhibit_areas   as string[], AREA_LABELS);
 
-  try {
-    const res = await fetch(
-      `${supabaseUrl}/rest/v1/sales_reps?select=email&email=not.is.null`,
-      {
-        headers: {
-          "apikey":        serviceKey,
-          "Authorization": `Bearer ${serviceKey}`,
-        },
-      }
-    );
-    if (!res.ok) return [];
-    const reps: { email: string }[] = await res.json();
-    return [...new Set(reps.map(r => r.email).filter(Boolean))];
-  } catch (e) {
-    console.warn("[notify-email] 担当者メールアドレス取得に失敗しました:", e);
-    return [];
+  return `
+<p style="margin:0 0 8px">${esc(r.company_name)} ${esc(name)} 様</p>
+<p style="margin:0 0 24px;line-height:1.8">
+  この度は健康博覧会の出展資料をご請求いただき、誠にありがとうございます。<br>
+  以下の内容でご請求を受け付けました。<br>
+  担当者より改めてご連絡させていただきます。しばらくお待ちくださいませ。
+</p>
+<table style="border-collapse:collapse;font-size:14px;width:100%;max-width:600px">
+  ${row("ご請求日時",   r.submitted_at)}
+  ${SEP}
+  ${row("貴社名",       r.company_name)}
+  ${row("ご担当者",     name)}
+  ${row("メールアドレス", r.email)}
+  ${row("連絡先電話番号", r.phone)}
+  ${SEP}
+  ${row("出展予定製品",             r.exhibit_products)}
+  ${rowHtml("出展を検討する会期",   periods)}
+  ${rowHtml("出展を希望するエリア", areas)}
+</table>
+<p style="margin:32px 0 4px;line-height:1.8;font-size:13px;color:#555">
+  ※ このメールはシステムより自動送信されています。このメールへの返信はできません。<br>
+  ※ ご不明な点がございましたら、下記までお問い合わせください。
+</p>
+<p style="margin:16px 0 0;font-size:13px">健康博覧会 事務局</p>
+`;
+}
+
+// Resend API へメール送信
+async function sendEmail(
+  apiKey: string,
+  params: { from: string; to: string | string[]; subject: string; html: string },
+): Promise<void> {
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type":  "application/json",
+    },
+    body: JSON.stringify(params),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err);
   }
 }
 
@@ -140,7 +164,6 @@ Deno.serve(async (req) => {
 
   const payload = await req.json();
   const record  = payload?.record as Record<string, unknown> | undefined;
-
   if (!record) {
     return new Response("No record in payload", { status: 400 });
   }
@@ -151,34 +174,44 @@ Deno.serve(async (req) => {
     return new Response("Server misconfiguration", { status: 500 });
   }
 
-  // 担当者テーブルからメールアドレスを取得し、なければ NOTIFY_TO にフォールバック
-  const toAddresses = await getSalesRepEmails();
-  if (toAddresses.length === 0 && NOTIFY_TO) toAddresses.push(NOTIFY_TO);
-  if (toAddresses.length === 0) {
-    console.warn("[notify-email] 送信先アドレスが設定されていません");
-    return new Response("No recipients configured", { status: 200 });
+  if (!NOTIFY_TO) {
+    console.error("NOTIFY_TO is not set");
+    return new Response("NOTIFY_TO not configured", { status: 500 });
   }
 
-  const subject = `【資料請求】${record.company_name ?? "（社名未入力）"} 様より申込みがありました`;
+  const errors: string[] = [];
 
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type":  "application/json",
-    },
-    body: JSON.stringify({
+  // ① 担当者への社内通知
+  try {
+    await sendEmail(apiKey, {
       from:    NOTIFY_FROM,
-      to:      toAddresses,
-      subject,
-      html:    buildHtml(record),
-    }),
-  });
+      to:      NOTIFY_TO,
+      subject: `【資料請求】${record.company_name ?? "（社名未入力）"} 様より申込みがありました`,
+      html:    buildNotificationHtml(record),
+    });
+  } catch (e) {
+    console.error("[notify-email] 担当者通知メール送信エラー:", e);
+    errors.push("notification");
+  }
 
-  if (!res.ok) {
-    const err = await res.text();
-    console.error("Resend error:", err);
-    return new Response(`Failed to send email: ${err}`, { status: 502 });
+  // ② 請求者への自動返信
+  const requesterEmail = typeof record.email === "string" ? record.email : null;
+  if (requesterEmail) {
+    try {
+      await sendEmail(apiKey, {
+        from:    NOTIFY_FROM,
+        to:      requesterEmail,
+        subject: "【出展資料のご請求を受け付けました】健康博覧会",
+        html:    buildAutoReplyHtml(record),
+      });
+    } catch (e) {
+      console.error("[notify-email] 自動返信メール送信エラー:", e);
+      errors.push("auto-reply");
+    }
+  }
+
+  if (errors.length > 0) {
+    return new Response(`Partial failure: ${errors.join(", ")}`, { status: 502 });
   }
 
   return new Response("OK", { status: 200 });

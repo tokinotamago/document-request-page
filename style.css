@@ -380,10 +380,6 @@ body {
 .btn-submit__arrow { transition: transform var(--tr); }
 .btn-submit:hover .btn-submit__arrow { transform: translateX(3px); }
 
-/* 最終送信ボタン — 信頼感を与えるフォレストグリーン */
-#finalSubmitBtn              { background: #2d6a4f; }
-#finalSubmitBtn:hover        { background: #1e5038; }
-
 /* ============================================================
    Confirmation page
    ============================================================ */

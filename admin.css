@@ -48,6 +48,15 @@
   justify-content: center;
 }
 
+.login-form .form-group {
+  display: block;
+}
+.login-form .form-label {
+  padding-top: 0;
+  margin-bottom: 6px;
+  display: block;
+}
+
 /* ============================================================
    管理画面 共通レイアウト
    ============================================================ */

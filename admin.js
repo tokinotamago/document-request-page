@@ -43,7 +43,7 @@ async function showLoggedIn(session) {
   loggedInEmail.textContent = session?.user?.email ?? '';
   await loadSalesReps();
   populateListFilterControls();
-  populateCsvSalesRepOptions();
+  populateCsvFilterControls();
   renderSalesRepSettingsList();
   fetchAndRenderDashboard();
 }
@@ -478,7 +478,6 @@ function bindListControls() {
 const detailModal        = document.getElementById('detailModal');
 const detailModalTitle   = document.getElementById('detailModalTitle');
 const detailStatusSelect = document.getElementById('detailStatusSelect');
-const detailStatusSaved  = document.getElementById('detailStatusSaved');
 const detailModalBody    = document.getElementById('detailModalBody');
 const closeDetailModalBtn = document.getElementById('closeDetailModalBtn');
 const editRequestBtn     = document.getElementById('editRequestBtn');
