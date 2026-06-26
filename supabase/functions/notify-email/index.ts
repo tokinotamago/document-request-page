@@ -1,11 +1,12 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
 
-const NOTIFY_TO   = Deno.env.get("NOTIFY_TO")   ?? "";
 const NOTIFY_FROM = Deno.env.get("NOTIFY_FROM") ?? "no-reply@resend.dev";
+// NOTIFY_TO は担当者にメールアドレスが設定されていない場合のフォールバック
+const NOTIFY_TO   = Deno.env.get("NOTIFY_TO")   ?? "";
 
 // タイミング攻撃を防ぐ定数時間文字列比較（XOR）
 function safeEqual(a: string, b: string): boolean {
-  const enc  = new TextEncoder();
+  const enc    = new TextEncoder();
   const aBytes = enc.encode(a);
   const bBytes = enc.encode(b);
   if (aBytes.length !== bBytes.length) return false;
@@ -26,7 +27,7 @@ const AREA_LABELS: Record<string, string> = {
   "beauty_wellness":       "ビューティー＆ウェルネスEXPO",
   "body_mind_recovery":    "ボディ＆マインドリカバリーEXPO",
   "health_beauty_factory": "健康＆美容ファクトリーEXPO",
-  "age_tech_lab":          "【特別企画】AGE-TECH Lab. 2026",
+  "age_tech_lab":          "【特別企画】AGE-TECH Lab. 2026（エイジテック・ラボ）",
   "undecided":             "未定",
 };
 
@@ -45,6 +46,7 @@ function labelize(values: string[], map: Record<string, string>): string {
   return values.map(v => esc(map[v] ?? v)).join("、");
 }
 
+// 確認画面と同じ項目・ラベルでメール本文を生成する
 function buildHtml(r: Record<string, unknown>): string {
   const name    = `${r.last_name ?? ""} ${r.first_name ?? ""}`.trim();
   const kana    = `${r.last_name_kana ?? ""} ${r.first_name_kana ?? ""}`.trim();
@@ -58,37 +60,67 @@ function buildHtml(r: Record<string, unknown>): string {
   const periods = labelize(r.exhibit_periods as string[], PERIOD_LABELS);
   const areas   = labelize(r.exhibit_areas   as string[], AREA_LABELS);
 
+  const th = `style="text-align:left;padding:6px 12px;background:#f5f5f5;white-space:nowrap;border:1px solid #ddd;font-weight:normal;"`;
+  const td = `style="padding:6px 12px;border:1px solid #ddd"`;
+  const sep = `<tr><td colspan="2" style="padding:0;border:none;height:12px"></td></tr>`;
+
   const row = (label: string, value: unknown) =>
-    `<tr><th style="text-align:left;padding:6px 12px;background:#f5f5f5;white-space:nowrap;border:1px solid #ddd">${esc(label)}</th>` +
-    `<td style="padding:6px 12px;border:1px solid #ddd">${esc(value)}</td></tr>`;
+    `<tr><th ${th}>${esc(label)}</th><td ${td}>${esc(value)}</td></tr>`;
 
   const rowHtml = (label: string, html: string) =>
-    `<tr><th style="text-align:left;padding:6px 12px;background:#f5f5f5;white-space:nowrap;border:1px solid #ddd">${esc(label)}</th>` +
-    `<td style="padding:6px 12px;border:1px solid #ddd">${html}</td></tr>`;
+    `<tr><th ${th}>${esc(label)}</th><td ${td}>${html}</td></tr>`;
 
   return `
-<p>資料請求フォームに新しい申込みがありました。</p>
+<p style="margin:0 0 16px">資料請求フォームに新しい申込みがありました。</p>
 <table style="border-collapse:collapse;font-size:14px;width:100%;max-width:640px">
-  ${row("貴社名",             r.company_name)}
-  ${row("担当者",             name)}
-  ${row("ふりがな",           kana)}
-  ${row("部署",               r.department)}
-  ${row("役職",               r.job_title)}
-  ${row("メールアドレス",     r.email)}
-  ${row("電話番号",           r.phone)}
-  ${row("住所",               address)}
-  ${row("WEBサイト",          r.website)}
-  ${row("出展予定製品",       r.exhibit_products)}
-  ${rowHtml("出展検討会期",   periods)}
-  ${rowHtml("希望エリア",     areas)}
-  ${row("創業5年以内",        r.startup_check ? "該当" : "非該当")}
-  ${row("出会いたい業種",     r.target_industry)}
-  ${row("他展示会",           r.other_shows)}
-  ${row("オンライン商談希望", r.online_meeting)}
-  ${row("その他",             r.other_notes)}
-  ${row("送信日時",           r.submitted_at)}
+  ${row("貴社名",   r.company_name)}
+  ${row("ご担当者", name)}
+  ${row("ふりがな", kana)}
+  ${row("部署",     r.department)}
+  ${row("役職",     r.job_title)}
+  ${sep}
+  ${row("メールアドレス",   r.email)}
+  ${row("連絡先電話番号",   r.phone)}
+  ${row("住所",             address || null)}
+  ${row("WEBサイト",        r.website)}
+  ${sep}
+  ${row("出展予定製品",           r.exhibit_products)}
+  ${rowHtml("出展を検討する会期", periods)}
+  ${rowHtml("出展を希望するエリア", areas)}
+  ${row("該当（創業5年以内）", r.startup_check ? "創業５年以内" : null)}
+  ${sep}
+  ${row("出会いたい業種",               r.target_industry)}
+  ${row("本展以外の出展検討中の展示会", r.other_shows)}
+  ${row("オンライン商談希望日時",       r.online_meeting)}
+  ${row("その他",                       r.other_notes)}
 </table>
+<p style="margin:16px 0 0;font-size:12px;color:#888">送信日時: ${esc(r.submitted_at)}</p>
 `;
+}
+
+// sales_reps テーブルから通知先メールアドレスを取得する
+async function getSalesRepEmails(): Promise<string[]> {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const serviceKey  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!supabaseUrl || !serviceKey) return [];
+
+  try {
+    const res = await fetch(
+      `${supabaseUrl}/rest/v1/sales_reps?select=email&email=not.is.null`,
+      {
+        headers: {
+          "apikey":        serviceKey,
+          "Authorization": `Bearer ${serviceKey}`,
+        },
+      }
+    );
+    if (!res.ok) return [];
+    const reps: { email: string }[] = await res.json();
+    return [...new Set(reps.map(r => r.email).filter(Boolean))];
+  } catch (e) {
+    console.warn("[notify-email] 担当者メールアドレス取得に失敗しました:", e);
+    return [];
+  }
 }
 
 Deno.serve(async (req) => {
@@ -96,8 +128,6 @@ Deno.serve(async (req) => {
     return new Response("Method Not Allowed", { status: 405 });
   }
 
-  // Webhook 送信元が正規の Supabase Database Webhook であることを検証する。
-  // Dashboard の Webhook 設定で x-webhook-secret ヘッダーに WEBHOOK_SECRET の値を設定すること。
   const webhookSecret = Deno.env.get("WEBHOOK_SECRET");
   if (!webhookSecret) {
     console.error("WEBHOOK_SECRET is not set");
@@ -121,6 +151,14 @@ Deno.serve(async (req) => {
     return new Response("Server misconfiguration", { status: 500 });
   }
 
+  // 担当者テーブルからメールアドレスを取得し、なければ NOTIFY_TO にフォールバック
+  const toAddresses = await getSalesRepEmails();
+  if (toAddresses.length === 0 && NOTIFY_TO) toAddresses.push(NOTIFY_TO);
+  if (toAddresses.length === 0) {
+    console.warn("[notify-email] 送信先アドレスが設定されていません");
+    return new Response("No recipients configured", { status: 200 });
+  }
+
   const subject = `【資料請求】${record.company_name ?? "（社名未入力）"} 様より申込みがありました`;
 
   const res = await fetch("https://api.resend.com/emails", {
@@ -131,7 +169,7 @@ Deno.serve(async (req) => {
     },
     body: JSON.stringify({
       from:    NOTIFY_FROM,
-      to:      [NOTIFY_TO],
+      to:      toAddresses,
       subject,
       html:    buildHtml(record),
     }),

@@ -5,10 +5,10 @@
 // ================================================================
 // DOM references
 // ================================================================
+const pageHeader       = document.getElementById('pageHeader');
 const formWrapper      = document.getElementById('formWrapper');
 const form             = document.getElementById('documentRequestForm');
 const submitBtn        = document.getElementById('submitBtn');
-const submittedAtEl    = document.getElementById('submittedAt');
 const confirmationPage = document.getElementById('confirmationPage');
 const backToFormBtn    = document.getElementById('backToFormBtn');
 const finalSubmitBtn   = document.getElementById('finalSubmitBtn');
@@ -242,7 +242,7 @@ function collectFormData() {
     online_meeting:  getValue('onlineMeeting'),
     other_notes:     getValue('otherNotes'),
     source:          document.getElementById('formSource')?.value ?? 'exhibition_2025',
-    submitted_at:    '',
+    // submitted_at はサーバー側トリガーで設定するため送信しない
   };
 }
 
@@ -425,6 +425,7 @@ async function handleSubmit(e) {
   pendingData = collectFormData();
   populateConfirmation(pendingData);
 
+  pageHeader.hidden       = true;
   formWrapper.hidden      = true;
   confirmationPage.hidden = false;
   confirmationPage.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -435,6 +436,7 @@ async function handleSubmit(e) {
 // ================================================================
 function handleBackToForm() {
   confirmationPage.hidden = true;
+  pageHeader.hidden       = false;
   formWrapper.hidden      = false;
   formWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -443,9 +445,6 @@ function handleBackToForm() {
 // Confirmation: 「資料を請求する」（最終送信）
 // ================================================================
 async function handleFinalSubmit() {
-  pendingData.submitted_at = new Date().toISOString();
-  submittedAtEl.value = pendingData.submitted_at;
-
   setFinalSubmitting(true);
   try {
     await submitToServer(pendingData);

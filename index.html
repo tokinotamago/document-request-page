@@ -18,18 +18,18 @@
   <main class="main-content">
     <div class="container">
 
-      <h1 class="page-title">出展資料請求</h1>
-
-      <p class="page-lead">展示会の詳細がわかる来場実績リストやフロアマップなどの最新資料（無料）をお送りします。<br>まだ出展を迷われている方も、まずは情報収集としてお気軽にご請求ください。</p>
-      <p class="form-lead"><span class="required-mark">※</span> 必須入力</p>
+      <div id="pageHeader">
+        <h1 class="page-title">出展資料請求</h1>
+        <p class="page-lead">展示会の詳細がわかる来場実績リストやフロアマップなどの最新資料（無料）をお送りします。<br>まだ出展を迷われている方も、まずは情報収集としてお気軽にご請求ください。</p>
+        <p class="form-lead"><span class="required-mark">※</span> 必須入力</p>
+      </div>
 
       <!-- ===== フォームラッパー ===== -->
       <div id="formWrapper">
 
         <form id="documentRequestForm" method="POST" action="#" novalidate>
 
-          <input type="hidden" id="formSource"  name="source"       value="exhibition_2025">
-          <input type="hidden" id="submittedAt" name="submitted_at" value="">
+          <input type="hidden" id="formSource" name="source" value="exhibition_2025">
 
           <!-- ===== SECTION: 貴社・担当者情報 ===== -->
           <section class="form-section" id="section-company">
@@ -39,7 +39,7 @@
                 貴社名<span class="required-mark">※</span>
               </label>
               <input type="text" id="companyName" name="company_name" class="form-input"
-                     placeholder="社名" autocomplete="organization" required>
+                     placeholder="社名" autocomplete="organization" maxlength="200" required>
               <span class="error-message" id="error-companyName" role="alert"></span>
             </div>
 
@@ -50,12 +50,12 @@
               <div class="input-row">
                 <div class="input-row__item">
                   <input type="text" id="lastName" name="last_name" class="form-input"
-                         placeholder="姓" autocomplete="family-name" required>
+                         placeholder="姓" autocomplete="family-name" maxlength="100" required>
                   <span class="error-message" id="error-lastName" role="alert"></span>
                 </div>
                 <div class="input-row__item">
                   <input type="text" id="firstName" name="first_name" class="form-input"
-                         placeholder="名" autocomplete="given-name" required>
+                         placeholder="名" autocomplete="given-name" maxlength="100" required>
                   <span class="error-message" id="error-firstName" role="alert"></span>
                 </div>
               </div>
@@ -68,12 +68,12 @@
               <div class="input-row">
                 <div class="input-row__item">
                   <input type="text" id="lastNameKana" name="last_name_kana" class="form-input"
-                         placeholder="せい" required>
+                         placeholder="せい" maxlength="100" required>
                   <span class="error-message" id="error-lastNameKana" role="alert"></span>
                 </div>
                 <div class="input-row__item">
                   <input type="text" id="firstNameKana" name="first_name_kana" class="form-input"
-                         placeholder="めい" required>
+                         placeholder="めい" maxlength="100" required>
                   <span class="error-message" id="error-firstNameKana" role="alert"></span>
                 </div>
               </div>
@@ -84,7 +84,7 @@
                 部署<span class="required-mark">※</span>
               </label>
               <input type="text" id="department" name="department" class="form-input"
-                     placeholder="部署" autocomplete="organization-title" required>
+                     placeholder="部署" autocomplete="organization-title" maxlength="200" required>
               <span class="error-message" id="error-department" role="alert"></span>
             </div>
 
@@ -93,7 +93,7 @@
                 役職<span class="required-mark">※</span>
               </label>
               <input type="text" id="jobTitle" name="job_title" class="form-input"
-                     placeholder="役職" required>
+                     placeholder="役職" maxlength="100" required>
               <span class="error-message" id="error-jobTitle" role="alert"></span>
             </div>
 
@@ -107,7 +107,7 @@
                 メールアドレス<span class="required-mark">※</span>
               </label>
               <input type="email" id="email" name="email" class="form-input"
-                     placeholder="メールアドレス" autocomplete="email" required>
+                     placeholder="メールアドレス" autocomplete="email" maxlength="254" required>
               <span class="error-message" id="error-email" role="alert"></span>
             </div>
 
@@ -116,7 +116,7 @@
                 メールアドレス（確認用）<span class="required-mark">※</span>
               </label>
               <input type="email" id="emailConfirm" name="email_confirm" class="form-input"
-                     placeholder="メールアドレス（確認用）" autocomplete="off" required>
+                     placeholder="メールアドレス（確認用）" autocomplete="off" maxlength="254" required>
               <span class="error-message" id="error-emailConfirm" role="alert"></span>
             </div>
 
@@ -125,7 +125,7 @@
                 連絡先電話番号<span class="required-mark">※</span>
               </label>
               <input type="tel" id="phone" name="phone" class="form-input"
-                     placeholder="連絡先電話番号" autocomplete="tel" required>
+                     placeholder="連絡先電話番号" autocomplete="tel" maxlength="30" required>
               <span class="error-message" id="error-phone" role="alert"></span>
             </div>
 
@@ -183,7 +183,7 @@
                 出展予定製品<span class="required-mark">※</span>
               </label>
               <input type="text" id="exhibitProducts" name="exhibit_products" class="form-input"
-                     placeholder="健康食品、健康機器、健康アプリなど" required>
+                     placeholder="健康食品、健康機器、健康アプリなど" maxlength="500" required>
               <span class="error-message" id="error-exhibitProducts" role="alert"></span>
             </div>
 
@@ -285,13 +285,13 @@
             <div class="form-group">
               <label class="form-label" for="targetIndustry">出会いたい業種</label>
               <input type="text" id="targetIndustry" name="target_industry" class="form-input"
-                     placeholder="出会いたい業種">
+                     placeholder="出会いたい業種" maxlength="500">
             </div>
 
             <div class="form-group">
               <label class="form-label" for="otherShows">本展以外の出展検討中の展示会</label>
               <input type="text" id="otherShows" name="other_shows" class="form-input"
-                     placeholder="本展以外の出展検討中の展示会">
+                     placeholder="本展以外の出展検討中の展示会" maxlength="500">
             </div>
 
             <div class="form-group">
@@ -299,12 +299,14 @@
                 オンライン商談を希望される方は、希望日時を入力してください。
               </label>
               <textarea id="onlineMeeting" name="online_meeting" class="form-textarea" rows="3"
+                        maxlength="2000"
                         placeholder="オンライン商談を希望される方は、希望日時を入力してください。"></textarea>
             </div>
 
             <div class="form-group">
               <label class="form-label" for="otherNotes">その他</label>
               <textarea id="otherNotes" name="other_notes" class="form-textarea" rows="4"
+                        maxlength="5000"
                         placeholder="出展に関する質問事項などがございましたら、こちらにご記入ください"></textarea>
             </div>
 

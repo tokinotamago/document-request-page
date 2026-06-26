@@ -620,6 +620,17 @@
   grid-column: 1 / -1;
 }
 
+.chart-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-text);
+  margin: 0 0 12px;
+}
+
+.chart-canvas-wrap--trend {
+  height: 240px;
+}
+
 .chart-canvas-wrap--status {
   height: 46px;
 }
@@ -1115,6 +1126,13 @@
 .settings-rep-name {
   font-size: 14px;
   color: var(--c-text);
+  min-width: 8em;
+}
+
+.settings-rep-email {
+  font-size: 13px;
+  color: var(--c-text-light, #666);
+  flex: 1;
 }
 
 .settings-rep-delete {

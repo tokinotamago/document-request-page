@@ -5,7 +5,9 @@
 // ================================================================
 // Supabaseクライアント（認証つき。SELECT/UPDATE/DELETEはRLSでauthenticatedロールのみ許可）
 // ================================================================
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { storage: window.sessionStorage },
+});
 
 // ================================================================
 // DOM references
@@ -61,9 +63,27 @@ function setLoginSubmitting(loading) {
 // ================================================================
 // ログイン
 // ================================================================
+const LOGIN_MAX_ATTEMPTS = 5;
+const LOGIN_BLOCK_MS     = 30000; // 30秒
+// ページリフレッシュ後もカウンターが持続するよう sessionStorage に保持
+const LOGIN_FAIL_KEY  = '_adm_login_fail';
+const LOGIN_BLOCK_KEY = '_adm_login_block';
+const getLoginFailCount    = ()  => parseInt(sessionStorage.getItem(LOGIN_FAIL_KEY)  || '0', 10);
+const getLoginBlockedUntil = ()  => parseInt(sessionStorage.getItem(LOGIN_BLOCK_KEY) || '0', 10);
+const setLoginFailCount    = (n) => sessionStorage.setItem(LOGIN_FAIL_KEY,  String(n));
+const setLoginBlockedUntil = (t) => sessionStorage.setItem(LOGIN_BLOCK_KEY, String(t));
+
 async function handleLoginSubmit(e) {
   e.preventDefault();
   loginErrorEl.textContent = '';
+
+  // ロックアウト中は試行させない
+  const remaining = getLoginBlockedUntil() - Date.now();
+  if (remaining > 0) {
+    loginErrorEl.textContent =
+      `試行回数が多すぎます。${Math.ceil(remaining / 1000)}秒後に再試行してください。`;
+    return;
+  }
 
   const email    = loginEmailEl.value.trim();
   const password = loginPasswordEl.value;
@@ -77,8 +97,19 @@ async function handleLoginSubmit(e) {
   try {
     const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
     if (error) {
-      loginErrorEl.textContent = 'メールアドレスまたはパスワードが正しくありません。';
+      const newCount = getLoginFailCount() + 1;
+      if (newCount >= LOGIN_MAX_ATTEMPTS) {
+        setLoginBlockedUntil(Date.now() + LOGIN_BLOCK_MS);
+        setLoginFailCount(0);
+        loginErrorEl.textContent = `試行回数が多すぎます。${LOGIN_BLOCK_MS / 1000}秒後に再試行してください。`;
+      } else {
+        setLoginFailCount(newCount);
+        loginErrorEl.textContent = 'メールアドレスまたはパスワードが正しくありません。';
+      }
       console.error('[admin] ログインエラー:', error.message);
+    } else {
+      setLoginFailCount(0);    // 成功時リセット
+      setLoginBlockedUntil(0);
     }
     // 成功時の画面切り替えは onAuthStateChange で行う
   } catch (err) {
@@ -129,7 +160,7 @@ async function loadSalesReps() {
   try {
     const { data, error } = await supabaseClient
       .from(SALES_REPS_TABLE)
-      .select('id, name')
+      .select('id, name, email')
       .order('created_at', { ascending: true });
     if (error) throw error;
     salesRepsData = data || [];
@@ -346,7 +377,9 @@ const CSV_COLUMNS = [
 
 function csvField(value) {
   const str = String(value ?? '');
-  return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+  // =, +, -, @, Tab 始まりはExcel/LibreOfficeの数式として実行されるため先頭に ' を付与
+  const safe = /^[=+\-@\t]/.test(str) ? `'${str}` : str;
+  return /[",\n]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
 }
 
 function formatCsvValue(column, record) {
@@ -492,7 +525,7 @@ function openDetailModal(record) {
   isEditMode          = false;
   detailModalTitle.textContent = `${record.company_name} 様`;
   setDetailModalStatus(record.status);
-  detailModalBody.innerHTML = buildRequestDetailHtml(record);
+  detailModalBody.innerHTML = buildRequestDetailHtml(record, { adminMemo: true });
   exitEditMode();
   detailModal.hidden = false;
 }
@@ -639,7 +672,7 @@ async function handleSaveEdit() {
 
     currentDetailRecord = data;
     detailModalTitle.textContent  = `${data.company_name} 様`;
-    detailModalBody.innerHTML     = buildRequestDetailHtml(data);
+    detailModalBody.innerHTML     = buildRequestDetailHtml(data, { adminMemo: true });
     setDetailModalStatus(data.status);
     exitEditMode();
     fetchAndRenderList();
@@ -654,7 +687,7 @@ async function handleSaveEdit() {
 }
 
 function handleCancelEdit() {
-  detailModalBody.innerHTML = buildRequestDetailHtml(currentDetailRecord);
+  detailModalBody.innerHTML = buildRequestDetailHtml(currentDetailRecord, { adminMemo: true });
   exitEditMode();
 }
 
@@ -908,10 +941,97 @@ function destroyChart(canvasId) {
 
 // ISO日時文字列 → "YYYY-MM-DD"（ローカルタイムゾーン基準）
 function toDateKey(iso) {
+  if (!iso) return null;
   const d = new Date(iso);
-  if (!iso || Number.isNaN(d.getTime())) return null;
+  if (Number.isNaN(d.getTime())) return null;
   const tzOffsetMs = d.getTimezoneOffset() * 60000;
   return new Date(d.getTime() - tzOffsetMs).toISOString().slice(0, 10);
+}
+
+function renderMonthlyTrendChart(records) {
+  const currentYear = new Date().getFullYear();
+
+  // X軸: 今年の1月〜12月
+  const labels = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+
+  const yearConfigs = [
+    { year: currentYear,     borderColor: '#DC143C', borderWidth: 2.5, borderDash: []      }, // crimson
+    { year: currentYear - 1, borderColor: '#1565C0', borderWidth: 1.5, borderDash: []      }, // dark blue
+    { year: currentYear - 2, borderColor: '#2E7D32', borderWidth: 1.5, borderDash: []      }, // dark green
+  ];
+
+  const datasets = yearConfigs.map(({ year, borderColor, borderWidth, borderDash }) => {
+    const data = Array.from({ length: 12 }, (_, m) => {
+      const key = `${year}-${String(m + 1).padStart(2, '0')}`;
+      return records.filter(r => {
+        const dk = toDateKey(r.submitted_at);
+        return dk && dk.startsWith(key);
+      }).length;
+    });
+    return {
+      label: `${year}年`,
+      data,
+      borderColor,
+      backgroundColor: 'transparent',
+      borderWidth,
+      borderDash,
+      pointRadius: 3,
+      pointHoverRadius: 5,
+      tension: 0.3,
+    };
+  });
+
+  destroyChart('trendChart');
+  const canvas = document.getElementById('trendChart');
+  if (!canvas) return;
+
+  charts['trendChart'] = new Chart(canvas, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          ticks: { font: { size: 12 } },
+          grid: { display: false },
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { precision: 0 },
+          grid: { color: 'rgba(0,0,0,0.06)' },
+        },
+      },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+          labels: {
+            usePointStyle: true,
+            pointStyle: 'line',
+            boxWidth: 30,
+            font: { size: 12 },
+            padding: 16,
+            generateLabels: (chart) => chart.data.datasets.map((ds, i) => ({
+              text:        ds.label,
+              strokeStyle: ds.borderColor,
+              fillStyle:   'transparent',
+              lineWidth:   ds.borderWidth,
+              lineDash:    ds.borderDash || [],
+              pointStyle:  'line',
+              hidden:      !chart.isDatasetVisible(i),
+              datasetIndex: i,
+            })),
+          },
+        },
+        datalabels: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y}件`,
+          },
+        },
+      },
+    },
+  });
 }
 
 function renderStatusChart(records) {
@@ -1067,6 +1187,7 @@ async function fetchAndRenderDashboard() {
     cachedDashboardRecords = data || [];
 
     renderKpis(cachedDashboardRecords);
+    renderMonthlyTrendChart(cachedDashboardRecords);
     renderStatusChart(cachedDashboardRecords);
   } catch (err) {
     console.error('[admin] ダッシュボード取得エラー:', err);
@@ -1286,6 +1407,7 @@ function renderSalesRepSettingsList() {
   listEl.innerHTML = salesRepsData.map(rep => `
     <li class="settings-rep-item">
       <span class="settings-rep-name">${escapeHtml(rep.name)}</span>
+      <span class="settings-rep-email">${escapeHtml(rep.email || '—')}</span>
       <button type="button" class="btn-back settings-rep-delete"
               data-id="${escapeHtml(rep.id)}" data-name="${escapeHtml(rep.name)}">削除</button>
     </li>
@@ -1293,9 +1415,11 @@ function renderSalesRepSettingsList() {
 }
 
 async function handleAddSalesRep() {
-  const input   = document.getElementById('newSalesRepInput');
-  const errorEl = document.getElementById('salesRepAddError');
-  const name    = input?.value.trim() ?? '';
+  const nameInput  = document.getElementById('newSalesRepInput');
+  const emailInput = document.getElementById('newSalesRepEmail');
+  const errorEl    = document.getElementById('salesRepAddError');
+  const name       = nameInput?.value.trim()  ?? '';
+  const email      = emailInput?.value.trim() ?? '';
 
   errorEl.textContent = '';
   if (!name) { errorEl.textContent = '担当者名を入力してください。'; return; }
@@ -1305,12 +1429,13 @@ async function handleAddSalesRep() {
   try {
     const { data, error } = await supabaseClient
       .from(SALES_REPS_TABLE)
-      .insert({ name })
-      .select('id, name')
+      .insert({ name, email: email || null })
+      .select('id, name, email')
       .single();
     if (error) throw error;
     salesRepsData.push(data);
-    input.value = '';
+    nameInput.value  = '';
+    emailInput.value = '';
     renderSalesRepSettingsList();
     refreshRepDropdowns();
     showToast(`「${data.name}」を追加しました`);
@@ -1352,6 +1477,9 @@ function refreshRepDropdowns() {
 function bindSettingsPanel() {
   document.getElementById('addSalesRepBtn')?.addEventListener('click', handleAddSalesRep);
   document.getElementById('newSalesRepInput')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleAddSalesRep();
+  });
+  document.getElementById('newSalesRepEmail')?.addEventListener('keydown', e => {
     if (e.key === 'Enter') handleAddSalesRep();
   });
   document.getElementById('salesRepList')?.addEventListener('click', e => {

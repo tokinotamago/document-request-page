@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>管理画面 | 出展資料請求</title>
   <meta name="robots" content="noindex, nofollow">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -85,6 +87,13 @@
         <p class="dashboard-error" id="dashboardError" hidden></p>
 
         <div class="dashboard-charts">
+          <div class="chart-card chart-card--full chart-card--trend">
+            <h3 class="chart-card-title">月別 資料請求件数（過去3年）</h3>
+            <div class="chart-canvas-wrap chart-canvas-wrap--trend">
+              <canvas id="trendChart"></canvas>
+            </div>
+          </div>
+
           <div class="chart-card chart-card--full chart-card--status">
             <div class="status-header-row">
               <div class="status-filter-bar">
@@ -167,7 +176,9 @@
           <h2 class="settings-section-title">営業担当者の管理</h2>
           <div class="settings-add-row">
             <input type="text" id="newSalesRepInput" class="form-input settings-rep-input"
-                   placeholder="担当者名を入力" maxlength="50">
+                   placeholder="担当者名" maxlength="50">
+            <input type="email" id="newSalesRepEmail" class="form-input settings-rep-input"
+                   placeholder="通知先メールアドレス" maxlength="200">
             <button type="button" id="addSalesRepBtn" class="btn-submit settings-add-btn">追加</button>
           </div>
           <p class="settings-add-error" id="salesRepAddError" aria-live="polite"></p>

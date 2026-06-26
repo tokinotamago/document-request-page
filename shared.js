@@ -101,7 +101,7 @@ function formatDateTimeJa(iso) {
 }
 
 // document_requests の1レコードを makeBlock 用のHTMLに整形（確認ページ・詳細モーダル共通）
-function buildRequestDetailHtml(data) {
+function buildRequestDetailHtml(data, { adminMemo = false } = {}) {
   return [
     makeBlock([
       makeRow('貴社名',   data.company_name),
@@ -132,10 +132,12 @@ function buildRequestDetailHtml(data) {
       makeRow('オンライン商談希望日時',        data.online_meeting  || null),
       makeRow('その他',                       data.other_notes     || null),
     ]),
-    `<div class="memo-block">
-      <div class="memo-label">営業メモ</div>
-      <textarea id="detailMemoTextarea" class="memo-textarea" placeholder="メモを入力...">${escapeHtml(data.memo || '')}</textarea>
-      <span class="memo-saved-msg" id="memoSavedMsg" aria-live="polite"></span>
-    </div>`,
+    adminMemo
+      ? `<div class="memo-block">
+          <div class="memo-label">営業メモ</div>
+          <textarea id="detailMemoTextarea" class="memo-textarea" placeholder="メモを入力...">${escapeHtml(data.memo || '')}</textarea>
+          <span class="memo-saved-msg" id="memoSavedMsg" aria-live="polite"></span>
+        </div>`
+      : '',
   ].join('');
 }
